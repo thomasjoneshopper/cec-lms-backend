@@ -9,18 +9,41 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | Field | Type |
 | ----- | ---- |
 | `user_id` | `INT PK` |
-| `employee_number` | `TEXT` |
-| `name` | `TEXT` |
-| `last_sign_in` | `DATETIME` |
+| `employee_number` | `NVARCHAR` |
+| `name` | `NVARCHAR` |
+| `last_sign_in` | `DATETIME2` |
+| `created_at` | `DATETIME2` |
 
 ### Courses:
 
 | Field | Type |
 | ----- | ---- |
 | `course_id` | `INT PK` |
-| `name` | `TEXT` |
+| `name` | `NVARCHAR` |
 
 - May add more fields for version information
+
+### Modules:
+
+| Field | Type |
+| ----- | ---- |
+| `module_id` | `INT PK` |
+| `course_id` | `INK FK` |
+| `name` | `NVARCHAR` |
+| `number` | `INT` |
+| `paragraph_count` | `INT` |
+
+### Quizzes:
+
+| Field | Type |
+| ----- | ---- |
+| `quiz_id` | `INT PK` |
+| `course_id` | `INT FK` |
+| `name` | `NVARCHAR` |
+| `passing_score` | `INT` |
+| `total_questions` | `INT` |
+
+- May add fields to describe connection to module
 
 ### UserCourseProgress:
 
@@ -33,16 +56,6 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 
 - `(user_id, course_id)` is the primary key
 
-### Modules:
-
-| Field | Type |
-| ----- | ---- |
-| `module_id` | `INT PK` |
-| `course_id` | `INK FK` |
-| `name` | `TEXT` |
-| `number` | `INT` |
-| `paragraph_count` | `INT` |
-
 ### UserParagraphCompletion:
 
 | Field | Type |
@@ -50,21 +63,9 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | `user_id` | `INT FK` |
 | `module_id` | `INT FK` |
 | `paragraph_number` | `INT` |
-| `completion_time` | `DATETIME` |
+| `completion_time` | `DATETIME2` |
 
 - `(user_id, module_id, paragraph_number)` is the primary key
-
-### Quizzes:
-
-| Field | Type |
-| ----- | ---- |
-| `quiz_id` | `INT PK` |
-| `course_id` | `INT FK` |
-| `name` | `TEXT` |
-| `passing_score` | `INT` |
-| `total_questions` | `INT` |
-
-- May add fields to describe connection to module
 
 ### UserQuizAttempts:
 
@@ -74,7 +75,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | `user_id` | `INT FK` |
 | `quiz_id` | `INT FK` |
 | `score` | `INT` |
-| `submission_time` | `DATETIME` |
+| `submission_time` | `DATETIME2` |
 
 ## API Endpoints
 
