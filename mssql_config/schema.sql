@@ -32,7 +32,8 @@ BEGIN
         paragraph_count INT             NOT NULL,
 
         CONSTRAINT PK_Modules PRIMARY KEY (module_id),
-        CONSTRAINT FK_Modules_course FOREIGN KEY (course_id) REFERENCES dbo.Courses(course_id)
+        CONSTRAINT FK_Modules_course FOREIGN KEY (course_id) 
+        REFERENCES dbo.Courses(course_id) ON DELETE CASCADE
     );
 END;
 
@@ -40,14 +41,16 @@ IF OBJECT_ID('dbo.Quizzes', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.Quizzes (
         quiz_id         INT             NOT NULL IDENTITY(1,1),
-        module_id       INT             NULL, -- NULL for final quizzes
         course_id       INT             NOT NULL,
-        passing_score   INT             NOT NULL,
-        total_questions INT             NOT NULL,
+        module_id       INT             NULL, -- NULL for final quizzes
+        passing_score   INT             NOT NULL, -- Out of 100
+        question_count  INT             NOT NULL,
 
         CONSTRAINT PK_Quizzes PRIMARY KEY (quiz_id),
-        CONSTRAINT FK_Quizzes_course FOREIGN KEY (course_id) REFERENCES dbo.Courses(course_id),
-        CONSTRAINT FK_Quizzes_modules FOREIGN KEY (module_id) REFERENCES dbo.Modules(module_id)
+        CONSTRAINT FK_Quizzes_course FOREIGN KEY (course_id)
+        REFERENCES dbo.Courses(course_id) ON DELETE CASCADE,
+        CONSTRAINT FK_Quizzes_modules FOREIGN KEY (module_id)
+        REFERENCES dbo.Modules(module_id)
     );
 END;
 
