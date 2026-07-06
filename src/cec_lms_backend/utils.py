@@ -11,7 +11,7 @@ from . import db
 def verify_user(f):
     """
     Decodes the jwt stored in httpOnly cookie. 
-    Adds `g.user_id` attribute if successful, returns 401 if not
+    Adds `g.use_id` attribute if successful, returns 401 if not
     """
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -32,7 +32,7 @@ def verify_user(f):
             return jsonify(error=e), 401
 
         g.user_id = int(claims["sub"])
-        if not db.users.exists(g.user_id):
+        if not db.users.get_role(g.user_id):
             return jsonify(error="Insufficient permissions"), 403
 
         return f(*args, **kwargs)

@@ -30,12 +30,11 @@ def get_id(employee_number: str, name: str) -> int:
     
     return user_id
 
-
-def exists(user_id: str):
+def get_role(user_id: int) -> bool:
     """
-    Checks if user with specified `user_id` exists in `Users`
+    Returns the role of user with specified `user_id` if exists
 
-    should return role information later
+    TODO: set up role field
     """
 
     with connect() as connection:
@@ -47,4 +46,26 @@ def exists(user_id: str):
             WHERE user_id = ?
             """, user_id
         )
-        return cursor.fetchone() is not None
+        row = cursor.fetchone()
+        if row is None: return False
+        return True
+    
+def get_entry(user_id: int) -> dict | None:
+    """
+    Returns dict of fields for user with specified `user_id` if exists
+    """
+    FIELDS = ("employee_number", "name")
+
+    with connect() as connection:
+        cursor = connection.cursor()
+        
+        cursor.execute(
+            f"""
+            SELECT {", ".join(FIELDS)} 
+            FROM Users
+            WHERE user_id = ?
+            """, user_id
+        )
+        row = cursor.fetchone()
+        if row is None: return None
+        return {field: getattr(row, field, None) for field in FIELDS}

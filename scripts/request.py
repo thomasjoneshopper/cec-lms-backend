@@ -22,8 +22,8 @@ def test_all_endpoints():
         r = s.post(DOMAIN+"/auth/login", json=login_creds)
         print_response(r)
 
-        # r = s.get(DOMAIN+"/auth/me")
-        # print_response(r)
+        r = s.get(DOMAIN+"/auth/me")
+        print_response(r)
 
         # # course
         # r = s.get(DOMAIN+"/course/1/progress")

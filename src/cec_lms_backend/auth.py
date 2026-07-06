@@ -48,4 +48,5 @@ def logout():
 @auth.get("/me")
 @verify_user
 def me():
-    return jsonify(f"user information for user {g.user_id}"), 200
+    user = db.users.get_entry(g.user_id)
+    return jsonify(user), 200
