@@ -11,7 +11,6 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | `user_id` | `INT PK` |
 | `employee_number` | `NVARCHAR` |
 | `name` | `NVARCHAR` |
-| `last_sign_in` | `DATETIME2` |
 | `created_at` | `DATETIME2` |
 
 ### Courses:
@@ -53,6 +52,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | `course_id` | `INT FK` |
 | `active_module_id` | `INT FK` |
 | `active_paragraph` | `INT` |
+| `complete` | `BIT` |
 
 - `(user_id, course_id)` is the primary key
 
@@ -94,7 +94,7 @@ api/
 
 
 
-### Login
+### Auth
 
 ```http
 POST /auth/login
@@ -102,14 +102,10 @@ POST /auth/login
 - upsert `User`
 - set jwt cookie
 
-### Logout
-
 ```http
 POST /auth/logout
 ```
 - clear jwt cookie
-
-### Me
 
 ```http
 GET /auth/me
@@ -134,6 +130,7 @@ POST /course/<course_id>/progress
 DELETE /course/<course_id>/progress
 ```
 - Admin only
+
 
 ### Quiz Attempt
 

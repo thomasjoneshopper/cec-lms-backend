@@ -1,12 +1,19 @@
 from datetime import datetime, timedelta, timezone
-from functools import wraps
 
-from flask import Blueprint, g, request, jsonify
+from flask import Blueprint, g, jsonify
 import jwt
+from pydantic import BaseModel
 
 from . import config
 from . import db
+from .utils import verify_json, verify_user
 
+
+auth = Blueprint("auth", __name__, url_prefix="/auth")
+
+class LoginSchema(BaseModel):
+    employee_number: str
+    name: str
 
 def create_token(user_id):
     now = datetime.now(timezone.utc)
@@ -17,45 +24,11 @@ def create_token(user_id):
     }
 
     return jwt.encode(payload, config.JWT_SECRET, config.JWT_ALGO)
-    
-def verify_user(f):
-    """
-    Decodes the jwt stored in httpOnly cookie. 
-    Adds `g.user_id` attribute if successful, returns 401 if not
-    """
-    @wraps(f)
-    def wrapper():
-        cookie = request.cookies.get(config.SESSION_COOKIE)
-        try:
-            claims = jwt.decode(
-                jwt=cookie, key=config.JWT_SECRET, algorithms=[config.JWT_ALGO],
-                options={"require": ["sub", "exp", "iat"]}
-            )
-        except jwt.ExpiredSignatureError:
-            return jsonify(error="Token expired"), 401
-        except jwt.InvalidTokenError:
-            return jsonify(error="Invalid token"), 401
-        except jwt.PyJWTError as e:
-            # log this, shouldn't happen
-            return jsonify(error=e), 401
-
-        g.user_id = int(claims["sub"])
-        return f()
-    return wrapper
-
-
-auth = Blueprint("auth", __name__, url_prefix="/auth")
 
 @auth.post("/login")
+@verify_json(LoginSchema)
 def login():
-    body: dict = request.get_json()
-    if not isinstance(body, dict) or not {"name", "employee_number"} <= set(body):
-        return jsonify(error="need name and employee_number"), 400
-    
-    # upsert user
-    # get user_id
-    user_id = 1
-
+    user_id = db.users.get_id(**g.body)
     response = jsonify(authenticated=True)
     response.set_cookie(
         config.SESSION_COOKIE, 
@@ -75,4 +48,4 @@ def logout():
 @auth.get("/me")
 @verify_user
 def me():
-    return f"user information for user {g.user_id}\n", 200
+    return jsonify(f"user information for user {g.user_id}"), 200

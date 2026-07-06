@@ -4,7 +4,6 @@ BEGIN
         user_id         INT             NOT NULL IDENTITY(1,1),
         employee_number NVARCHAR(16)    NOT NULL,
         name            NVARCHAR(128)   NOT NULL,
-        last_sign_in    DATETIME2       NULL,
         created_at      DATETIME2       NOT NULL DEFAULT SYSDATETIME(),
         
         CONSTRAINT PK_Users PRIMARY KEY (user_id),
