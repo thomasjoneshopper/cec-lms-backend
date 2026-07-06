@@ -18,10 +18,10 @@ def create_token(user_id):
 
     return jwt.encode(payload, config.JWT_SECRET, config.JWT_ALGO)
     
-def verify_session(f):
+def verify_user(f):
     """
     Decodes the jwt stored in httpOnly cookie. 
-    Will add `user_id` attribute to `g` object if successful, or return 401 if not
+    Adds `g.user_id` attribute if successful, returns 401 if not
     """
     @wraps(f)
     def wrapper():
@@ -66,13 +66,13 @@ def login():
     return response
 
 @auth.post("/logout")
-@verify_session
+@verify_user
 def logout():
     response = jsonify(authenticated=False)
     response.delete_cookie(config.SESSION_COOKIE, httponly=True)
     return response
 
 @auth.get("/me")
-@verify_session
+@verify_user
 def me():
-    return f"user information for user {g.user_id}", 200
+    return f"user information for user {g.user_id}\n", 200
