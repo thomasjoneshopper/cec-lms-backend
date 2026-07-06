@@ -41,7 +41,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | `course_id` | `INT FK` |
 | `name` | `NVARCHAR` |
 | `passing_score` | `INT` |
-| `total_questions` | `INT` |
+| `question_count` | `INT` |
 
 - May add fields to describe connection to module
 
@@ -75,56 +75,75 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | `user_id` | `INT FK` |
 | `quiz_id` | `INT FK` |
 | `score` | `INT` |
+| `correct_answers` | `INT` |
 | `submission_time` | `DATETIME2` |
 
 ## API Endpoints
 
-    api
-    ├── auth
-    │   ├── login
-    │   ├── logout
-    │   └── me
-    ├── progress
-    │   └── paragraphs
-    └── quizzes
-        ├── <quiz_id>
-        └── final
+```text
+api/
+├── auth/
+│   ├── login
+│   ├── logout
+│   └── me
+├── course/<course_id>/
+│   └── progress
+└── quiz/<quiz_id>/
+    └── attempt
+```
 
-### `POST /auth/login`:
 
+
+### Login
+
+```http
+POST /auth/login
+```
 - upsert `User`
 - set jwt cookie
 
-### `POST /auth/logout`:
+### Logout
 
+```http
+POST /auth/logout
+```
 - clear jwt cookie
 
-### `GET /auth/me`:
+### Me
 
+```http
+GET /auth/me
+```
 - read `User` entry with id from jwt `sub`
 
-### `GET /<course>/progress`:
 
+### Course Progress
+```http
+GET /course/<course_id>/progress
+```
 - read `UserParagraphCompletion`, select all that correspond to current user and course
 
-### `POST /<course>/progress`:
 
+```http
+POST /course/<course_id>/progress
+```
 - send paragraph number and course id
 - create `UserParagraphCompletion` entry 
 
-### `DELETE /<course>/progress`:
-
+```http
+DELETE /course/<course_id>/progress
+```
 - Admin only
 
-### `GET /<course>/quizzes/<quiz_number>`:
+### Quiz Attempt
 
+```http
+GET /quiz/<quiz_id>/attempt
+```
 - `quiz_number` either a number or "final"
 - response contains last quiz attempt score and maybe time
 
-### `POST /<course>/quizzes/<quiz_number>`:
-
+```http
+POST /quiz/<quiz_id>/attempt
+```
 - request contains score of latest attempt
-
-### `GET /<course>/admin/users`:
-
-- admin only
