@@ -21,21 +21,27 @@ def load_content(fp: TextIO):
         cursor = connection.cursor()
 
         # Insert Course
-        cursor.execute("INSERT INTO Courses (name) VALUES (?)", title)
-        course_id = cursor.execute("SELECT course_id FROM Courses WHERE name = ?", title).fetchone()[0]
+        cursor.execute(
+            """
+            INSERT INTO Courses (title)
+            OUTPUT INSERTED.course_id 
+            VALUES (?)
+            """, title
+        )
+        course_id = cursor.fetchval()
 
 
         # Insert Modules
         cursor.executemany(
             """
-            INSERT INTO dbo.Modules (course_id, name, number, paragraph_count)
+            INSERT INTO dbo.Modules (course_id, title, ordinal, paragraph_count)
             VALUES (?, ?, ?, ?)
             """,
             ((course_id, m["name"], m["number"], m["paragraph_count"]) for m in modules)
         )
 
         # Insert Quizzes
-        cursor.execute("SELECT number, module_id FROM Modules")
+        cursor.execute("SELECT ordinal, module_id FROM Modules")
         map = {number: id for number,id in cursor.fetchall()}
         cursor.executemany(
             """

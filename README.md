@@ -4,13 +4,23 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 
 ## Database Tables
 
+### Roles:
+
+| Field | Type |
+| ----- | ---- |
+| `role_id` | `INT PK` |
+| `title` | `NVARCHAR` |
+
+- reader and admin
+
 ### Users:
 
 | Field | Type |
 | ----- | ---- |
 | `user_id` | `INT PK` |
+| `role_id` | `INT FK` |
 | `employee_number` | `NVARCHAR` |
-| `name` | `NVARCHAR` |
+| `full_name` | `NVARCHAR` |
 | `created_at` | `DATETIME2` |
 
 ### Courses:
@@ -18,7 +28,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | Field | Type |
 | ----- | ---- |
 | `course_id` | `INT PK` |
-| `name` | `NVARCHAR` |
+| `title` | `NVARCHAR` |
 
 - May add more fields for version information
 
@@ -28,8 +38,8 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | ----- | ---- |
 | `module_id` | `INT PK` |
 | `course_id` | `INK FK` |
-| `name` | `NVARCHAR` |
-| `number` | `INT` |
+| `title` | `NVARCHAR` |
+| `ordinal` | `INT` |
 | `paragraph_count` | `INT` |
 
 ### Quizzes:
@@ -38,7 +48,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | ----- | ---- |
 | `quiz_id` | `INT PK` |
 | `course_id` | `INT FK` |
-| `name` | `NVARCHAR` |
+| `module_id` | `INT FK` |
 | `passing_score` | `INT` |
 | `question_count` | `INT` |
 
@@ -81,7 +91,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 ## API Endpoints
 
 ```text
-api/
+/
 ├── auth/
 │   ├── login
 │   ├── logout
@@ -89,9 +99,8 @@ api/
 ├── course/<course_id>/
 │   └── progress
 └── quiz/<quiz_id>/
-    └── attempt
+    └── attempts
 ```
-
 
 
 ### Auth
@@ -99,26 +108,40 @@ api/
 ```http
 POST /auth/login
 ```
+```json
+{
+    "employee_number": "0TA16****",
+    "full_name": "John Doe"
+}
+```
 - upsert `User`
 - set jwt cookie
+
+<br>
 
 ```http
 POST /auth/logout
 ```
 - clear jwt cookie
 
+<br>
+
 ```http
 GET /auth/me
 ```
 - read `User` entry with id from jwt `sub`
 
+<br>
+
 
 ### Course Progress
+
 ```http
 GET /course/<course_id>/progress
 ```
 - read `UserParagraphCompletion`, select all that correspond to current user and course
 
+<br>
 
 ```http
 POST /course/<course_id>/progress
@@ -126,21 +149,27 @@ POST /course/<course_id>/progress
 - send paragraph number and course id
 - create `UserParagraphCompletion` entry 
 
+<br>
+
 ```http
 DELETE /course/<course_id>/progress
 ```
 - Admin only
 
+<br>
 
-### Quiz Attempt
+
+### Quiz Attempts
 
 ```http
-GET /quiz/<quiz_id>/attempt
+GET /quiz/<quiz_id>/attempts
 ```
 - `quiz_number` either a number or "final"
 - response contains last quiz attempt score and maybe time
 
+<br>
+
 ```http
-POST /quiz/<quiz_id>/attempt
+POST /quiz/<quiz_id>/attempts
 ```
 - request contains score of latest attempt

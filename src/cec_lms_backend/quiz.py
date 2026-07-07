@@ -10,13 +10,13 @@ def verify_quiz_id(endpoint, values: dict):
     # verify quiz exists in db
     g.quiz_id = quiz_id
 
-@quiz.get("/attempt")
-@verify_user
+@quiz.get("/attempts")
+@verify_user()
 def get_attempt():
     return f"reading last attempt of quiz {g.quiz_id} for user {g.user_id}\n", 200
 
-@quiz.post("/attempt")
-@verify_user
+@quiz.post("/attempts")
+@verify_user()
 def post_attempt():
     return f"creating quiz {g.quiz_id} attempt for user {g.user_id}\n", 200
 

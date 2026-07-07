@@ -17,8 +17,8 @@ def test_api():
     with requests.sessions.session() as s:
         # auth
         login_creds = {
-            "employee_number": "0000",
-            "name": "test",
+            "employee_number": "0TA160000",
+            "full_name": "John Doe"
         }
         r = s.post(DOMAIN+"/auth/login", json=login_creds)
         print_response(r)
@@ -31,7 +31,7 @@ def test_api():
         print_response(r)
 
 def test_load_content():
-    with open("../../cec-loto-lms/lessonData.json") as f: 
+    with open("/home/thomas/cec-loto-lms/lessonData.json") as f: 
         db.utils.load_content(f)
 
 if __name__ == "__main__":
