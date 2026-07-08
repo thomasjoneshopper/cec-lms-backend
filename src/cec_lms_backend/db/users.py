@@ -4,7 +4,7 @@ def get_id(employee_number: str, full_name: str) -> int:
     """
     Returns `user_id`, updating `Users` if entry does not exist.
 
-    `employee_number` is used for matching; `name` only needed if insert
+    `employee_number` is used for matching; `full_name` only needed if insert
     """
 
     with connect() as connection:
@@ -58,7 +58,7 @@ def get_entry(user_id: int) -> dict | None:
         
         cursor.execute(
             """
-            SELECT u.employee_number, u.full_name, r.title
+            SELECT u.employee_number, u.full_name, r.title AS role
             FROM dbo.Users AS u
             JOIN dbo.Roles AS r
             ON u.role_id = r.role_id
@@ -67,5 +67,5 @@ def get_entry(user_id: int) -> dict | None:
         )
         row = cursor.fetchone()
         if row is None: return None
-        columns = [column[0] for column in cursor.description]
+        columns = (column[0] for column in cursor.description)
         return dict(zip(columns, row))

@@ -21,7 +21,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | `role_id` | `INT FK` |
 | `employee_number` | `NVARCHAR` |
 | `full_name` | `NVARCHAR` |
-| `created_at` | `DATETIME2` |
+| `creation_time` | `DATETIME2` |
 
 ### Courses:
 
@@ -71,11 +71,13 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | Field | Type |
 | ----- | ---- |
 | `user_id` | `INT FK` |
+| `course_id` | `INT FK` |
 | `module_id` | `INT FK` |
 | `paragraph_number` | `INT` |
 | `completion_time` | `DATETIME2` |
 
 - `(user_id, module_id, paragraph_number)` is the primary key
+- `(user_id, )
 
 ### UserQuizAttempts:
 
@@ -83,6 +85,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | ----- | ---- |
 | `attempt_id` | `INT PK` |
 | `user_id` | `INT FK` |
+| `course_id` | `INT FK` |
 | `quiz_id` | `INT FK` |
 | `score` | `INT` |
 | `correct_answers` | `INT` |
@@ -91,7 +94,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 ## API Endpoints
 
 ```text
-/
+.
 ├── auth/
 │   ├── login
 │   ├── logout

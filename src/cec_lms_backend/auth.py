@@ -15,27 +15,26 @@ class LoginSchema(BaseModel):
     employee_number: str
     full_name: str
 
-def create_token(user_id):
+@auth.post("/login")
+@verify_json(LoginSchema)
+def login():
+    response = jsonify(authenticated=True)
+
+    user_id = db.users.get_id(**g.body)
     now = datetime.now(timezone.utc)
     payload = {
         "sub": str(user_id),
         "iat": now,
         "exp": now + timedelta(seconds=config.JWT_TTL_SECONDS)
     }
-
-    return jwt.encode(payload, config.JWT_SECRET, config.JWT_ALGO)
-
-@auth.post("/login")
-@verify_json(LoginSchema)
-def login():
-    user_id = db.users.get_id(**g.body)
-    response = jsonify(authenticated=True)
+    
     response.set_cookie(
-        config.SESSION_COOKIE, 
-        create_token(user_id), 
+        key=config.SESSION_COOKIE, 
+        value=jwt.encode(payload, config.JWT_SECRET, config.JWT_ALGO), 
         max_age=config.JWT_TTL_SECONDS, 
         httponly=True
     )
+
     return response
 
 @auth.post("/logout")

@@ -1,5 +1,7 @@
-SELECT * FROM dbo.Roles ORDER BY role_id;
-SELECT * FROM dbo.Users;
-SELECT * FROM dbo.Courses;
-SELECT * FROM dbo.Modules;
-SELECT * FROM dbo.Quizzes;
+DECLARE @sql nvarchar(max) = '';
+
+SELECT @sql += 
+'SELECT '''' AS ' + t.name + ', * FROM ' + QUOTENAME(t.name) + ';'
+FROM sys.tables as t
+
+EXEC sp_executesql @sql;
