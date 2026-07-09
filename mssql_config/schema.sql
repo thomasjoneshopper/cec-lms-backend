@@ -80,14 +80,16 @@ BEGIN
 
         CONSTRAINT PK_Quizzes
             PRIMARY KEY (quiz_id),
-        CONSTRAINT FK_Quizzes_course 
+        CONSTRAINT AK_Quizzes_Courses
+            UNIQUE (course_id, quiz_id),
+        CONSTRAINT FK_Quizzes_Courses 
             FOREIGN KEY (course_id)
             REFERENCES dbo.Courses (course_id),
-        CONSTRAINT FK_Quizzes_module 
-            FOREIGN KEY (module_id)
-            REFERENCES dbo.Modules (module_id),
-        CONSTRAINT UQ_Quizzes_Courses
-            UNIQUE (course_id, quiz_id),
+        CONSTRAINT FK_Quizzes_Modules
+            FOREIGN KEY (course_id, module_id)
+            REFERENCES dbo.Modules (course_id, module_id),
+        CONSTRAINT UQ_Quizzes_Modules
+            UNIQUE (course_id, module_id),
         CONSTRAINT CK_Quizzes_passing_score
             CHECK (passing_score BETWEEN 0 AND 100),
         CONSTRAINT CK_Quizzes_question_count
@@ -106,11 +108,11 @@ BEGIN
 
         CONSTRAINT PK_Progress 
             PRIMARY KEY (user_id, course_id),
-        CONSTRAINT FK_Progress_user 
+        CONSTRAINT FK_Progress_Users 
             FOREIGN KEY (user_id)
             REFERENCES dbo.Users (user_id) 
             ON DELETE CASCADE,
-        CONSTRAINT FK_Progress_course 
+        CONSTRAINT FK_Progress_Courses
             FOREIGN KEY (course_id)
             REFERENCES dbo.Courses (course_id),
         CONSTRAINT FK_Progress_active_module 
@@ -132,11 +134,11 @@ BEGIN
 
         CONSTRAINT PK_Completion 
             PRIMARY KEY (user_id, module_id, paragraph_number),
-        CONSTRAINT FK_Completion_progress 
+        CONSTRAINT FK_Completion_Progress 
             FOREIGN KEY (user_id, course_id)
             REFERENCES dbo.UserCourseProgress (user_id, course_id) 
             ON DELETE CASCADE,
-        CONSTRAINT FK_Completion_module 
+        CONSTRAINT FK_Completion_Modules 
             FOREIGN KEY (course_id, module_id)
             REFERENCES dbo.Modules (course_id, module_id),
         CONSTRAINT CK_Completion_paragraph_number
@@ -152,21 +154,18 @@ BEGIN
         user_id             INT         NOT NULL,
         course_id           INT         NOT NULL,
         quiz_id             INT         NOT NULL,
-        score               INT         NOT NULL,
         correct_answers     INT         NOT NULL,
         submission_time     DATETIME2   NOT NULL DEFAULT SYSDATETIME(),
 
         CONSTRAINT PK_Attempts 
             PRIMARY KEY (attempt_id),
-        CONSTRAINT FK_Attempts_progress 
+        CONSTRAINT FK_Attempts_Progress 
             FOREIGN KEY (user_id, course_id)
             REFERENCES dbo.UserCourseProgress (user_id, course_id) 
             ON DELETE CASCADE,
-        CONSTRAINT FK_Attempts_quiz 
+        CONSTRAINT FK_Attempts_Quizzes 
             FOREIGN KEY (course_id, quiz_id)
             REFERENCES dbo.Quizzes (course_id, quiz_id),
-        CONSTRAINT CK_Attempts_score
-            CHECK (score BETWEEN 0 AND 100),
         CONSTRAINT CK_Attempts_correct_answers
             CHECK (correct_answers >= 0)
     );

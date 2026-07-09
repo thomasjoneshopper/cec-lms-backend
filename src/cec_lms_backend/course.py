@@ -1,13 +1,15 @@
-from flask import Blueprint, g, request, jsonify
+from flask import Blueprint, abort, jsonify, g, request
 
-from .auth import verify_user
+from cec_lms_backend import db
+from cec_lms_backend.auth import verify_user
 
 course = Blueprint("course", __name__, url_prefix="/course/<int:course_id>")
 
 @course.url_value_preprocessor
 def verify_course_id(endpoint, values: dict):
     course_id = values.pop("course_id", None)
-    # verify course exists in db
+    if not db.content.course_exists(course_id):
+        abort(404)
     g.course_id = course_id
 
 @course.get("/progress")
@@ -21,10 +23,6 @@ def post_progress():
     return f"updating progress for user {g.user_id} in course {g.course_id}\n", 200
 
 @course.delete("/progress")
-@verify_user(roles=("admin",)) # should require admin
+@verify_user(roles=["admin"]) # should require admin
 def delete_progress():
     return f"deleting progress for user {g.user_id} in course {g.course_id}\n", 200
-
-
-
-    

@@ -1,4 +1,4 @@
-from .connection import connect
+from cec_lms_backend.db.connection import connect
 
 def get_id(employee_number: str, full_name: str) -> int:
     """

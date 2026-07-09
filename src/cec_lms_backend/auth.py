@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta, timezone
 
-from flask import Blueprint, g, jsonify
+from flask import Blueprint, jsonify, g
 import jwt
 from pydantic import BaseModel
 
-from . import config
-from . import db
-from .utils import verify_json, verify_user, verify_empty
+from cec_lms_backend import config, db
+from cec_lms_backend.utils import verify_empty, verify_json, verify_user
 
 
 auth = Blueprint("auth", __name__, url_prefix="/auth")

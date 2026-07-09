@@ -1,4 +1,4 @@
-from flask import Blueprint, g, request, jsonify
+from flask import Blueprint, jsonify, g, request
 
 from .auth import verify_user
 
@@ -19,4 +19,3 @@ def get_attempt():
 @verify_user()
 def post_attempt():
     return f"creating quiz {g.quiz_id} attempt for user {g.user_id}\n", 200
-

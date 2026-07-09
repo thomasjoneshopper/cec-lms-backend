@@ -77,7 +77,6 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | `completion_time` | `DATETIME2` |
 
 - `(user_id, module_id, paragraph_number)` is the primary key
-- `(user_id, )
 
 ### UserQuizAttempts:
 
@@ -87,7 +86,6 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 | `user_id` | `INT FK` |
 | `course_id` | `INT FK` |
 | `quiz_id` | `INT FK` |
-| `score` | `INT` |
 | `correct_answers` | `INT` |
 | `submission_time` | `DATETIME2` |
 
@@ -149,7 +147,7 @@ GET /course/<course_id>/progress
 ```http
 POST /course/<course_id>/progress
 ```
-- send paragraph number and course id
+- send paragraph number and module id
 - create `UserParagraphCompletion` entry 
 
 <br>

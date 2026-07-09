@@ -23,5 +23,3 @@ def connect() -> pyodbc.Connection:
     )
 
     return connection
-
-

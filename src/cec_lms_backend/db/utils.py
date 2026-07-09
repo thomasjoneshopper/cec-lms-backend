@@ -1,7 +1,7 @@
 import json
 from typing import TextIO
 
-from .connection import connect
+from cec_lms_backend.db.connection import connect
 
 def load_content(fp: TextIO):
     data = json.load(fp)

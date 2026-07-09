@@ -2,5 +2,5 @@
 Subpackage for interacting with Microsoft SQL Server database
 """
 
-from . import users
-from . import utils
+from cec_lms_backend.db import users
+from cec_lms_backend.db import content
