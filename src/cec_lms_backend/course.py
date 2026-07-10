@@ -21,11 +21,6 @@ def get_progress():
 @course.post("/progress")
 @verify_user()
 def post_progress():
-    # 
-    # 
-    
-    
-    
     # create UserCourseProgress entry if does not exist
     # create UserParagraphCompletion entry for relevant paragraph
     return f"updating progress for user {g.user_id} in course {g.course_id}\n", 200
