@@ -15,11 +15,19 @@ def verify_course_id(endpoint, values: dict):
 @course.get("/progress")
 @verify_user()
 def get_progress():
-    return f"reading progress for user {g.user_id} in course {g.course_id}\n", 200
+    progress = db.content.course_progress(g.user_id, g.course_id)
+    return jsonify(progress)
 
 @course.post("/progress")
 @verify_user()
 def post_progress():
+    # 
+    # 
+    
+    
+    
+    # create UserCourseProgress entry if does not exist
+    # create UserParagraphCompletion entry for relevant paragraph
     return f"updating progress for user {g.user_id} in course {g.course_id}\n", 200
 
 @course.delete("/progress")

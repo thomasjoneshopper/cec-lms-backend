@@ -62,16 +62,13 @@ def verify_json(schema: type[BaseModel]):
         def wrapper(*args, **kwargs):
             try:
                 obj = schema.model_validate(request.get_json(), strict=True, extra="forbid")
-            except ValidationError as e:
+            except ValidationError as error:
                 return jsonify(
                     error="400 Bad Request",
-                    details=[
-                        {
-                            "type": err["type"],
-                            "field": ".".join(map(str, err["loc"])),
-                            "message": err["msg"]
-                        } for err in e.errors()
-                    ]
+                    details=[{
+                        "field": ".".join(map(str, d["loc"])),
+                        "message": d["msg"]
+                    } for d in error.errors()]
                 ), 400
             
             except Exception as e:

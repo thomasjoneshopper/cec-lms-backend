@@ -1,4 +1,5 @@
 import json
+from pyodbc import Cursor
 from typing import TextIO
 
 from cec_lms_backend.db.connection import connect
@@ -60,3 +61,9 @@ def load_content(fp: TextIO):
             (course_id, final_length)
         )
         connection.commit()
+
+def fetch_dict(cursor: Cursor):
+    row = cursor.fetchone()
+    if row is None: return None
+    columns = (column[0] for column in cursor.description)
+    return dict(zip(columns, row))

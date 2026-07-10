@@ -1,4 +1,5 @@
 from cec_lms_backend.db.connection import connect
+from cec_lms_backend.db.utils import fetch_dict
 
 def get_id(employee_number: str, full_name: str) -> int:
     """
@@ -36,8 +37,7 @@ def get_role(user_id: int) -> str | None:
     """
 
     with connect() as connection:
-        cursor = connection.cursor()
-        cursor.execute(
+        cursor = connection.execute(
             """
             SELECT r.title
             FROM dbo.Users AS u
@@ -54,9 +54,7 @@ def get_entry(user_id: int) -> dict | None:
     """
 
     with connect() as connection:
-        cursor = connection.cursor()
-        
-        cursor.execute(
+        cursor = connection.execute(
             """
             SELECT u.employee_number, u.full_name, r.title AS role
             FROM dbo.Users AS u
@@ -65,7 +63,6 @@ def get_entry(user_id: int) -> dict | None:
             WHERE u.user_id = ?;
             """, user_id
         )
-        row = cursor.fetchone()
-        if row is None: return None
-        columns = (column[0] for column in cursor.description)
-        return dict(zip(columns, row))
+        
+        return fetch_dict(cursor)
+        

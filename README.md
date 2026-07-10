@@ -1,8 +1,38 @@
 # CEC LMS Backend
 
-Backend API is built in Python with the Flask framework. Database is a Microsoft SQL Server.
+Backend API built in Python with the Flask framework. Database is a Microsoft SQL Server.
 
 ## Database Tables
+
+```mermaid
+erDiagram
+    courses
+    modules
+    paragraphs
+    quizzes
+
+    users
+
+    progress
+    attempts
+    completion
+
+    courses ||--|{ modules : ""
+    modules ||--|{ paragraphs : ""
+    courses ||--|{ quizzes : ""
+    modules ||--o| quizzes : ""
+
+    courses ||--o{ progress : ""
+    users ||--o{ progress : ""
+
+    progress ||--o{ attempts : ""
+    progress ||--o{ completion : ""
+
+    quizzes ||--o{ attempts : ""
+    paragraphs ||--o{ completion : ""
+    
+```
+
 
 ### Roles:
 
@@ -92,7 +122,7 @@ Backend API is built in Python with the Flask framework. Database is a Microsoft
 ## API Endpoints
 
 ```text
-.
+/
 ├── auth/
 │   ├── login
 │   ├── logout
@@ -115,8 +145,9 @@ POST /auth/login
     "full_name": "John Doe"
 }
 ```
-- upsert `User`
-- set jwt cookie
+- determine `user_id`
+- generate `Users` entry if does not exist
+- set jwt cookie with `sub = user_id`
 
 <br>
 
@@ -140,6 +171,7 @@ GET /auth/me
 ```http
 GET /course/<course_id>/progress
 ```
+
 - read `UserParagraphCompletion`, select all that correspond to current user and course
 
 <br>
@@ -147,7 +179,13 @@ GET /course/<course_id>/progress
 ```http
 POST /course/<course_id>/progress
 ```
-- send paragraph number and module id
+```json
+{
+    "module_id": 1,
+    "paragraph_number": 0
+}
+```
+- create `UserCourseProgress` entry if not exists
 - create `UserParagraphCompletion` entry 
 
 <br>
