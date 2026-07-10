@@ -8,12 +8,15 @@ def load_content(fp: TextIO):
     data = json.load(fp)
     title = data["title"]
     modules = []
+    paragraphs = []
     quizzes = []
     for m in data["modules"]:
-        modules.append({"name": m["title"], "number": m["id"]-1, "paragraph_count": len(m["paragraphs"])})
+        ordinal = m["id"] - 1
+        modules.append({"name": m["title"], "ordinal": ordinal})
+        paragraphs.extend({"module_ordinal": ordinal, "ordinal": i} for i in range(len(m["paragraphs"])))
         if "quiz" in m:
             quizzes.append({
-                "module_number": m["id"]-1, 
+                "module_ordinal": ordinal, 
                 "question_count": sum(len(s["questions"]) for s in m["quiz"]["sections"])
             })
     final_length = len(data["finalQuiz"])
@@ -31,25 +34,38 @@ def load_content(fp: TextIO):
         )
         course_id = cursor.fetchval()
 
-
         # Insert Modules
+        map: dict[int, int] = {}
+        for m in modules:
+            cursor.execute(
+                """
+                INSERT INTO dbo.Modules (course_id, title, ordinal)
+                OUTPUT INSERTED.module_id
+                VALUES (?, ?, ?)
+                """,
+                course_id, 
+                m["name"], 
+                m["ordinal"]
+            )
+            map[m["ordinal"]] = cursor.fetchval()
+
+
+        # Insert Paragraphs
         cursor.executemany(
             """
-            INSERT INTO dbo.Modules (course_id, title, ordinal, paragraph_count)
-            VALUES (?, ?, ?, ?)
-            """,
-            ((course_id, m["name"], m["number"], m["paragraph_count"]) for m in modules)
+            INSERT INTO dbo.Paragraphs (module_id, ordinal)
+            VALUES (?, ?)
+            """, 
+            ((map[p["module_ordinal"]], p["ordinal"]) for p in paragraphs)
         )
 
         # Insert Quizzes
-        cursor.execute("SELECT ordinal, module_id FROM Modules")
-        map = {number: id for number,id in cursor.fetchall()}
         cursor.executemany(
             """
             INSERT INTO Quizzes (course_id, module_id, passing_score, question_count)
             VALUES (?, ?, 90, ?)
             """,
-            ((course_id, map[q["module_number"]], q["question_count"]) for q in quizzes)
+            ((course_id, map[q["module_ordinal"]], q["question_count"]) for q in quizzes)
         )
 
         # Insert Final

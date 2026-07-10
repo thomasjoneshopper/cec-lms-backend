@@ -55,6 +55,4 @@ def test_load_content():
 
 
 if __name__ == "__main__":
-    with AuthenticatedSession() as s:
-        r = s.get(DOMAIN+"/course/1/progress")
-        print_response(r)
+    test_load_content()

@@ -51,7 +51,6 @@ BEGIN
         course_id       INT             NOT NULL,
         title           NVARCHAR(128)   NOT NULL,
         ordinal         INT             NOT NULL,
-        paragraph_count INT             NOT NULL,
 
         CONSTRAINT PK_Modules 
             PRIMARY KEY (module_id),
@@ -63,10 +62,29 @@ BEGIN
         CONSTRAINT UQ_Modules_ordinal 
             UNIQUE (course_id, ordinal),
         CONSTRAINT CK_Modules_ordinal
-            CHECK (ordinal >= 0),
-        CONSTRAINT CK_Modules_paragraph_count
-            CHECK (paragraph_count >= 0)
+            CHECK (ordinal >= 0)
     );
+END;
+
+IF OBJECT_ID('dbo.Paragraphs', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Paragraphs (
+        paragraph_id    INT NOT NULL IDENTITY(1,1),
+        module_id       INT NOT NULL,
+        ordinal         INT NOT NULL,
+
+        CONSTRAINT PK_Paragraphs
+            PRIMARY KEY (paragraph_id),
+        CONSTRAINT AK_Paragraphs_Modules
+            UNIQUE (module_id, paragraph_id),
+        CONSTRAINT FK_Paragraphs_Modules
+            FOREIGN KEY (module_id)
+            REFERENCES Modules (module_id),
+        CONSTRAINT UQ_Paragraphs_ordinal
+            UNIQUE (module_id, ordinal),
+        CONSTRAINT CK_Paragraphs_ordinal
+            CHECK (ordinal >= 0)
+    );  
 END;
 
 IF OBJECT_ID('dbo.Quizzes', 'U') IS NULL
@@ -129,11 +147,11 @@ BEGIN
         user_id             INT         NOT NULL,
         course_id           INT         NOT NULL,
         module_id           INT         NOT NULL,
-        paragraph_number    INT         NOT NULL,
+        paragraph_id        INT         NOT NULL,
         completion_time     DATETIME2   NOT NULL DEFAULT SYSDATETIME(),
 
         CONSTRAINT PK_Completion 
-            PRIMARY KEY (user_id, module_id, paragraph_number),
+            PRIMARY KEY (user_id, paragraph_id),
         CONSTRAINT FK_Completion_Progress 
             FOREIGN KEY (user_id, course_id)
             REFERENCES dbo.UserCourseProgress (user_id, course_id) 
@@ -141,8 +159,9 @@ BEGIN
         CONSTRAINT FK_Completion_Modules 
             FOREIGN KEY (course_id, module_id)
             REFERENCES dbo.Modules (course_id, module_id),
-        CONSTRAINT CK_Completion_paragraph_number
-            CHECK (paragraph_number >= 0)
+        CONSTRAINT FK_Completion_Paragraphs
+            FOREIGN KEY (module_id, paragraph_id)
+            REFERENCES dbo.Paragraphs (module_id, paragraph_id)
     );
 END;
 
