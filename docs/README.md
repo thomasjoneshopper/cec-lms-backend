@@ -5,32 +5,57 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 ## Database Tables
 
 ```mermaid
+%%{init: {
+  'theme': 'neutral',
+  'er': {
+    'layout': 'elk',
+    'direction': 'TB'
+  }
+}}%%
+
 erDiagram
     courses
-    modules
-    paragraphs
-    quizzes
-
     users
 
+    modules
+    quizzes
     progress
+
+    paragraphs
+    attempts
+
+    completion
+
+    courses ||--o{ progress : ""
+    courses ||--|{ modules : ""
+    courses ||--|{ quizzes : ""
+    users ||--o{ progress : ""
+    progress ||--o{ attempts : ""
+    progress ||--o{ completion : ""
+    modules ||--|{ paragraphs : ""
+    quizzes ||--o{ attempts: ""
+    paragraphs ||--o{ completion: ""
+```
+
+```mermaid
+erDiagram
+    courses
+    users
+
+    quizzes
+    progress
+    paragraphs
+    
     attempts
     completion
 
-    courses ||--|{ modules : ""
-    modules ||--|{ paragraphs : ""
-    courses ||--|{ quizzes : ""
-    modules ||--o| quizzes : ""
-
-    courses ||--o{ progress : ""
-    users ||--o{ progress : ""
+    courses ||--o{ progress: ""
+    users ||--o{ progress: ""
 
     progress ||--o{ attempts : ""
+    quizzes ||--o{ attempts: ""
     progress ||--o{ completion : ""
-
-    quizzes ||--o{ attempts : ""
-    paragraphs ||--o{ completion : ""
-    
+    paragraphs ||--o| completion : ""
 ```
 
 
