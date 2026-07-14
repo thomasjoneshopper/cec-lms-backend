@@ -21,7 +21,7 @@ BEGIN
         role_id         INT             NOT NULL DEFAULT (1),
         employee_number NVARCHAR(16)    NOT NULL,
         full_name       NVARCHAR(128)   NOT NULL,
-        creation_time   DATETIME2       NOT NULL DEFAULT SYSDATETIME(),
+        creation_time   DATETIME2       NOT NULL DEFAULT SYSUTCDATETIME(),
         
         CONSTRAINT PK_Users 
             PRIMARY KEY (user_id),
@@ -118,11 +118,12 @@ END;
 IF OBJECT_ID('dbo.UserCourseProgress', 'U') IS NULL
 BEGIN
     CREATE TABLE dbo.UserCourseProgress (
-        user_id             INT NOT NULL,
-        course_id           INT NOT NULL,
-        active_module       INT NULL,
-        active_paragraph    INT NULL,
-        complete            BIT NOT NULL DEFAULT (0),
+        user_id             INT         NOT NULL,
+        course_id           INT         NOT NULL,
+        active_module       INT         NULL,
+        active_paragraph    INT         NULL,
+        completion_time     DATETIME2   NULL,
+        creation_time       DATETIME2   NOT NULL DEFAULT SYSUTCDATETIME(),
 
         CONSTRAINT PK_Progress 
             PRIMARY KEY (user_id, course_id),
@@ -136,8 +137,9 @@ BEGIN
         CONSTRAINT FK_Progress_active_module 
             FOREIGN KEY (course_id, active_module)
             REFERENCES dbo.Modules (course_id, module_id),
-        CONSTRAINT CK_Progress_active_paragraph
-            CHECK (active_paragraph >= 0)
+        CONSTRAINT FK_Progress_active_paragraph
+            FOREIGN KEY (active_module, active_paragraph)
+            REFERENCES dbo.Paragraphs (module_id, paragraph_id)
     );
 END;
 
@@ -148,7 +150,7 @@ BEGIN
         course_id           INT         NOT NULL,
         module_id           INT         NOT NULL,
         paragraph_id        INT         NOT NULL,
-        completion_time     DATETIME2   NOT NULL DEFAULT SYSDATETIME(),
+        completion_time     DATETIME2   NOT NULL DEFAULT SYSUTCDATETIME(),
 
         CONSTRAINT PK_Completion 
             PRIMARY KEY (user_id, paragraph_id),
@@ -174,7 +176,7 @@ BEGIN
         course_id           INT         NOT NULL,
         quiz_id             INT         NOT NULL,
         correct_answers     INT         NOT NULL,
-        submission_time     DATETIME2   NOT NULL DEFAULT SYSDATETIME(),
+        submission_time     DATETIME2   NOT NULL DEFAULT SYSUTCDATETIME(),
 
         CONSTRAINT PK_Attempts 
             PRIMARY KEY (attempt_id),
@@ -189,3 +191,4 @@ BEGIN
             CHECK (correct_answers >= 0)
     );
 END;
+

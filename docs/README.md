@@ -4,61 +4,6 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 
 ## Database Tables
 
-```mermaid
-%%{init: {
-  'theme': 'neutral',
-  'er': {
-    'layout': 'elk',
-    'direction': 'TB'
-  }
-}}%%
-
-erDiagram
-    courses
-    users
-
-    modules
-    quizzes
-    progress
-
-    paragraphs
-    attempts
-
-    completion
-
-    courses ||--o{ progress : ""
-    courses ||--|{ modules : ""
-    courses ||--|{ quizzes : ""
-    users ||--o{ progress : ""
-    progress ||--o{ attempts : ""
-    progress ||--o{ completion : ""
-    modules ||--|{ paragraphs : ""
-    quizzes ||--o{ attempts: ""
-    paragraphs ||--o{ completion: ""
-```
-
-```mermaid
-erDiagram
-    courses
-    users
-
-    quizzes
-    progress
-    paragraphs
-    
-    attempts
-    completion
-
-    courses ||--o{ progress: ""
-    users ||--o{ progress: ""
-
-    progress ||--o{ attempts : ""
-    quizzes ||--o{ attempts: ""
-    progress ||--o{ completion : ""
-    paragraphs ||--o| completion : ""
-```
-
-
 ### Roles:
 
 | Field | Type |
@@ -85,7 +30,7 @@ erDiagram
 | `course_id` | `INT PK` |
 | `title` | `NVARCHAR` |
 
-- May add more fields for version information
+- Add field for version information
 
 ### Modules:
 
@@ -95,7 +40,14 @@ erDiagram
 | `course_id` | `INK FK` |
 | `title` | `NVARCHAR` |
 | `ordinal` | `INT` |
-| `paragraph_count` | `INT` |
+
+### Paragraphs:
+
+| Field | Type |
+| ----- | ---- |
+| `paragraph_id` | `INT PK` |
+| `module_id` | `INT FK` |
+| `ordinal` | `INT` |
 
 ### Quizzes:
 
@@ -107,17 +59,16 @@ erDiagram
 | `passing_score` | `INT` |
 | `question_count` | `INT` |
 
-- May add fields to describe connection to module
-
 ### UserCourseProgress:
 
 | Field | Type |
 | ----- | ---- |
 | `user_id` | `INT FK` |
 | `course_id` | `INT FK` |
-| `active_module_id` | `INT FK` |
-| `active_paragraph` | `INT` |
-| `complete` | `BIT` |
+| `active_module` | `INT FK` |
+| `active_paragraph` | `INT FK` |
+| `completion_time` | `DATETIME2` |
+| `creation_time` | `DATETIME2` |
 
 - `(user_id, course_id)` is the primary key
 
@@ -128,10 +79,10 @@ erDiagram
 | `user_id` | `INT FK` |
 | `course_id` | `INT FK` |
 | `module_id` | `INT FK` |
-| `paragraph_number` | `INT` |
+| `paragraph_id` | `INT` |
 | `completion_time` | `DATETIME2` |
 
-- `(user_id, module_id, paragraph_number)` is the primary key
+- `(user_id, paragraph_id)` is the primary key
 
 ### UserQuizAttempts:
 
@@ -154,6 +105,8 @@ erDiagram
 │   └── me
 ├── course/<course_id>/
 │   └── progress
+├── paragraph/<paragraph_id>/
+│   └── completion
 └── quiz/<quiz_id>/
     └── attempts
 ```
@@ -201,19 +154,6 @@ GET /course/<course_id>/progress
 
 <br>
 
-```http
-POST /course/<course_id>/progress
-```
-```json
-{
-    "module_id": 1,
-    "paragraph_number": 0
-}
-```
-- create `UserCourseProgress` entry if not exists
-- create `UserParagraphCompletion` entry 
-
-<br>
 
 ```http
 DELETE /course/<course_id>/progress
@@ -222,6 +162,15 @@ DELETE /course/<course_id>/progress
 
 <br>
 
+### Paragraph Completion
+
+```http
+POST /paragraph/<paragraph_id>/completion
+```
+- create `UserCourseProgress` entry if not exists
+- create `UserParagraphCompletion` entry 
+
+<br>
 
 ### Quiz Attempts
 

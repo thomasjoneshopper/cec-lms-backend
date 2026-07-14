@@ -33,21 +33,14 @@ def print_response(r: requests.Response):
 
 
 def test_api():
-    with requests.sessions.session() as s:
-        # auth
-        login_creds = {
-            "employee_number": "0TA160000",
-            "full_name": "John Doe"
+    with AuthenticatedSession() as s:
+        paragraph = {
+            "module_id": 2,
+            "paragraph_id": 1
         }
-        r = s.post(DOMAIN+"/auth/login", json=login_creds)
+        r = s.post(DOMAIN+"/course/1/progress", json=paragraph)
         print_response(r)
 
-        r = s.get(DOMAIN+"/auth/me")
-        print_response(r)
-
-        # auth logout
-        r = s.post(DOMAIN+"/auth/logout")
-        print_response(r)
 
 def test_load_content():
     with open("/home/thomas/cec-loto-lms/lessonData.json") as f: 
@@ -55,4 +48,4 @@ def test_load_content():
 
 
 if __name__ == "__main__":
-    test_load_content()
+    test_api()

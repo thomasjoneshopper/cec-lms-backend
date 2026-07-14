@@ -23,3 +23,11 @@ def connect() -> pyodbc.Connection:
     )
 
     return connection
+
+def ping() -> bool:
+    try:
+        with connect() as connection:
+            return bool(connection.execute("SELECT 1").fetchval())
+    except Exception as e:
+        print(f"ping failed with error:\n{e}")
+        return False
