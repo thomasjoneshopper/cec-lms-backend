@@ -19,6 +19,8 @@ class AuthenticatedSession:
     
     def __exit__(self, exc_type, exc_value, traceback):
         self.s.post(DOMAIN+"/auth/logout")
+        if exc_type: print(exc_type)
+        return False
 
 def print_response(r: requests.Response):
     print(f"{r.url}")
@@ -34,11 +36,7 @@ def print_response(r: requests.Response):
 
 def test_api():
     with AuthenticatedSession() as s:
-        paragraph = {
-            "module_id": 2,
-            "paragraph_id": 1
-        }
-        r = s.post(DOMAIN+"/course/1/progress", json=paragraph)
+        r = s.post(f"{DOMAIN}/paragraph/{1}/completion")
         print_response(r)
 
 

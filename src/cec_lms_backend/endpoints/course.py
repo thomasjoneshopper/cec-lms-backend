@@ -2,7 +2,7 @@ from flask import Blueprint, abort, jsonify, g, request
 from pydantic import BaseModel
 
 from cec_lms_backend import db
-from cec_lms_backend.auth import verify_user, verify_json, verify_empty
+from cec_lms_backend.endpoints.auth import verify_user, verify_json, verify_empty
 
 course = Blueprint("course", __name__, url_prefix="/course/<int:course_id>")
 

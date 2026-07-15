@@ -1,6 +1,7 @@
 import pyodbc
 
 from cec_lms_backend.db.connection import connect
+from cec_lms_backend.db.utils import fetch_dict
 
 def course_exists(course_id: int) -> bool:
     with connect() as connection:
@@ -32,7 +33,27 @@ def get_progress(user_id: int, course_id: int) -> dict:
         ]
     }
 
-def save_progress(user_id: int, paragraph_id: int) -> bool:
+def get_paragraph_context(paragraph_id: int) -> dict | None:
+    with connect() as connection:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT M.course_id, P.module_id, P.paragraph_id
+            FROM dbo.Paragraphs AS P
+            JOIN dbo.Modules AS M ON P.module_id = M.module_id
+            WHERE paragraph_id = ?
+            """, paragraph_id
+        )
+
+        return fetch_dict(cursor)
+
+def save_progress(user_id: int, course_id: int, module_id: int, paragraph_id: int):
+    """
+    does nothing if already complete
+    creates usercourseprogress entry if necessary
+
+    """
+    
     with connect() as connection:
         # Check if paragraph already completed
         cursor = connection.cursor()
@@ -46,26 +67,9 @@ def save_progress(user_id: int, paragraph_id: int) -> bool:
             paragraph_id
         )
 
-        if cursor.rowcount > 0:
-            # already completed
-            return True
+        if cursor.fetchval() == 1:
+            return # already completed
         
-        # check if paragraph exists
-        cursor.execute(
-            """
-            SELECT P.module_id, M.course_id
-            FROM dbo.Paragraphs AS P
-            JOIN dbo.Modules AS M ON P.module_id = M.module_id
-            WHERE paragraph_id = ?
-            """, paragraph_id
-        )
-
-        if cursor.rowcount == 0:
-            # paragraph does not exist
-            return False
-        
-        module_id, course_id = cursor.fetchone()
-
         # Check if UserCourseProgress entry exists
         cursor.execute(
             """
@@ -107,5 +111,4 @@ def save_progress(user_id: int, paragraph_id: int) -> bool:
         )
 
         connection.commit()
-        return True
 

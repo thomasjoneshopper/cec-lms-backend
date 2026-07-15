@@ -49,9 +49,9 @@ BEGIN
     CREATE TABLE dbo.Modules (
         module_id       INT             NOT NULL IDENTITY(1,1),
         course_id       INT             NOT NULL,
-        title           NVARCHAR(128)   NOT NULL,
         ordinal         INT             NOT NULL,
-
+        title           NVARCHAR(128)   NOT NULL,
+        
         CONSTRAINT PK_Modules 
             PRIMARY KEY (module_id),
         CONSTRAINT AK_Modules_Courses
