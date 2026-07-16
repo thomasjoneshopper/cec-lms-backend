@@ -1,5 +1,9 @@
+import time
+
 import requests
+
 from cec_lms_backend import db
+from cec_lms_backend.db.connection import connect
 
 DOMAIN = "http://127.0.0.1:5000"
 
@@ -13,13 +17,17 @@ class AuthenticatedSession:
         self.login_creds = login_creds
     
     def __enter__(self):
+        print("logging in ...", end="", flush=True)
         self.s = requests.sessions.session()
         self.s.post(DOMAIN+"/auth/login", json=self.login_creds)
+        print(" done")
         return self.s
     
     def __exit__(self, exc_type, exc_value, traceback):
+        print("logging out ...", end="", flush=True)
         self.s.post(DOMAIN+"/auth/logout")
         if exc_type: print(exc_type)
+        print(" done")
         return False
 
 def print_response(r: requests.Response):
@@ -36,13 +44,36 @@ def print_response(r: requests.Response):
 
 def test_api():
     with AuthenticatedSession() as s:
-        r = s.post(f"{DOMAIN}/paragraph/{1}/completion")
+        r = s.post(f"{DOMAIN}/quiz/2/attempts", json={"correct_answers":5})
+        print_response(r)
+
+        r = s.get(f"{DOMAIN}/quiz/2/attempts")
+        print_response(r)
+
+        r = s.delete(f"{DOMAIN}/course/1/progress")
+        print_response(r)
+
+        r = s.get(f"{DOMAIN}/quiz/2/attempts")
         print_response(r)
 
 
 def test_load_content():
     with open("/home/thomas/cec-loto-lms/lessonData.json") as f: 
         db.utils.load_content(f)
+
+def test_pooling(n: int = 100):
+    spids = {}
+    start = time.perf_counter()
+    for _ in range(n):
+        with connect() as connection:
+            spid = connection.execute("SELECT @@SPID").fetchval()
+            spids[spid] = spids.get(spid, 0) + 1
+            print(f"spid: {spid}")
+    end = time.perf_counter()
+    print(f"\nConnected {n} times in {end-start : .0f} seconds ({(end-start)/n:.3f} seconds per connection)")
+    print(f"SPIDs:")
+    print(*(f"{key:>4}: {value:>3}" for key,value in spids.items()), sep="\n")
+
 
 
 if __name__ == "__main__":

@@ -13,14 +13,16 @@ def verify_course_id(endpoint, values: dict):
         abort(404)
     g.course_id = course_id
 
+
 @course.get("/progress")
 @verify_user()
 @verify_empty
 def get_progress():
-    progress = db.content.get_progress(g.user_id, g.course_id)
+    progress = db.activity.get_progress(g.user_id, g.course_id)
     return jsonify(progress)
 
 @course.delete("/progress")
-@verify_user(roles=["admin"]) # should require admin
+@verify_user(roles=["admin"])
 def delete_progress():
-    return f"deleting progress for user {g.user_id} in course {g.course_id}\n", 200
+    db.activity.delete_progress(g.user_id, g.course_id)
+    return jsonify(success=True), 200

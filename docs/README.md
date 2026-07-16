@@ -177,12 +177,16 @@ POST /paragraph/<paragraph_id>/completion
 ```http
 GET /quiz/<quiz_id>/attempts
 ```
-- `quiz_number` either a number or "final"
-- response contains last quiz attempt score and maybe time
+- response contains last quiz attempt score and time
 
 <br>
 
 ```http
 POST /quiz/<quiz_id>/attempts
 ```
-- request contains score of latest attempt
+```json
+{
+    "correct_answers": 10
+}
+```
+- need to switch to server side grading

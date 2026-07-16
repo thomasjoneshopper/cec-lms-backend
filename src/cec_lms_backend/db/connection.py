@@ -1,27 +1,32 @@
 import struct
+from datetime import datetime as dt, timezone as tz
+import time
 
 from azure.identity import AzureCliCredential
 import pyodbc
 
 from cec_lms_backend.config import CONNECTION_STRING
 
+credential = AzureCliCredential()
+token = bytes()
+token_expiration = 0
+def get_token():
+    global token
+    global token_expiration
+    if token_expiration < int(time.time()) + 60:
+        access_token = credential.get_token("https://database.windows.net/.default")
+        token_expiration = access_token.expires_on
+        b = access_token.token.encode("utf-16-le")
+        token = struct.pack(f"<I{len(b)}s", len(b), b)
+    return token
 
 def connect() -> pyodbc.Connection:
     SQL_COPT_SS_ACCESS_TOKEN = 1256
-    
-    token = (
-        AzureCliCredential()
-        .get_token("https://database.windows.net/.default")
-        .token.encode("utf-16-le")
-    )
-    exptoken = struct.pack(f"<I{len(token)}s", len(token), token)
-
     connection = pyodbc.connect(
         CONNECTION_STRING,
         timeout=30,
-        attrs_before={SQL_COPT_SS_ACCESS_TOKEN: exptoken}
+        attrs_before={SQL_COPT_SS_ACCESS_TOKEN: get_token()}
     )
-
     return connection
 
 def ping() -> bool:
