@@ -1,15 +1,15 @@
-from flask import Blueprint, abort, jsonify, g, request
+from flask import Blueprint, abort, jsonify, g
 from pydantic import BaseModel
 
 from cec_lms_backend import db
-from cec_lms_backend.endpoints.auth import verify_user, verify_json, verify_empty
+from cec_lms_backend.endpoints.auth import verify_empty, verify_json, verify_user
 
 course = Blueprint("course", __name__, url_prefix="/course/<int:course_id>")
 
 @course.url_value_preprocessor
 def verify_course_id(endpoint, values: dict):
     course_id = values.pop("course_id", None)
-    if not db.content.course_exists(course_id):
+    if not db.courses.course_exists(course_id):
         abort(404)
     g.course_id = course_id
 
@@ -18,11 +18,14 @@ def verify_course_id(endpoint, values: dict):
 @verify_user()
 @verify_empty
 def get_progress():
-    progress = db.activity.get_progress(g.user_id, g.course_id)
+    progress = db.courses.get_progress(g.user_id, g.course_id)
     return jsonify(progress)
 
+class DeleteProgressSchema(BaseModel):
+    user_id: int
 @course.delete("/progress")
 @verify_user(roles=["admin"])
+@verify_json(DeleteProgressSchema)
 def delete_progress():
-    db.activity.delete_progress(g.user_id, g.course_id)
+    db.courses.delete_progress(g.body["user_id"], g.course_id)
     return jsonify(success=True), 200

@@ -3,6 +3,7 @@ from pyodbc import Error as DBError
 from werkzeug.exceptions import NotFound, MethodNotAllowed
 
 from cec_lms_backend.endpoints import auth, course, paragraph, quiz
+from cec_lms_backend.db import paragraphs, quizzes
 
 
 def not_found(error: NotFound):
@@ -30,6 +31,9 @@ def create_app() -> Flask:
     app = Flask(__name__)
 
     app.json.sort_keys = False
+
+    paragraphs.load_cache()
+    quizzes.load_cache()
 
     app.register_error_handler(404, not_found)
     app.register_error_handler(405, method_not_allowed)

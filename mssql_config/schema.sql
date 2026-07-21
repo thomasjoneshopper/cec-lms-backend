@@ -93,7 +93,7 @@ BEGIN
         quiz_id         INT NOT NULL IDENTITY(1,1),
         course_id       INT NOT NULL,
         module_id       INT NULL,       -- NULL for final quizzes
-        passing_score   INT NOT NULL,   -- Out of 100
+        passing_score   INT NOT NULL,   -- Number of questions 
         question_count  INT NOT NULL,
 
         CONSTRAINT PK_Quizzes

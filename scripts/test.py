@@ -4,6 +4,7 @@ import requests
 
 from cec_lms_backend import db
 from cec_lms_backend.db.connection import connect
+from cec_lms_backend.db import paragraphs as p, quizzes as q
 
 DOMAIN = "http://127.0.0.1:5000"
 
@@ -50,10 +51,20 @@ def test_api():
         r = s.get(f"{DOMAIN}/quiz/2/attempts")
         print_response(r)
 
+        for i in range(1,120):
+            r = s.post(f"{DOMAIN}/paragraph/{i}/completion")
+            print(f"{i:>3}: {r.status_code} {r.reason}")
+
+        r = s.get(f"{DOMAIN}/course/1/progress")
+        print_response(r)
+
         r = s.delete(f"{DOMAIN}/course/1/progress")
         print_response(r)
 
         r = s.get(f"{DOMAIN}/quiz/2/attempts")
+        print_response(r)
+
+        r = s.get(f"{DOMAIN}/course/1/progress")
         print_response(r)
 
 
@@ -74,7 +85,32 @@ def test_pooling(n: int = 100):
     print(f"SPIDs:")
     print(*(f"{key:>4}: {value:>3}" for key,value in spids.items()), sep="\n")
 
+class Node:
+    def __init__(self, val):
+        self.val = val
+        self.left = None
+        self.right = None
+
+    def __str__(self):
+        pass    
+    
+"""
+
+      3
+   ┌──┴──┐
+ 1234   4346
+   │     │
+
+"""
 
 
 if __name__ == "__main__":
-    test_api()
+    p.load_cache()
+    for key, value in p.context_cache.items():
+        print(f"{key}: {value}")
+
+    q.load_cache()
+    for key, value in q.context_cache.items():
+        print(f"{key}: {value}")
+        
+

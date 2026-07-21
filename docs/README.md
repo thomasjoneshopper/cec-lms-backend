@@ -79,7 +79,7 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 | `user_id` | `INT FK` |
 | `course_id` | `INT FK` |
 | `module_id` | `INT FK` |
-| `paragraph_id` | `INT` |
+| `paragraph_id` | `INT FK` |
 | `completion_time` | `DATETIME2` |
 
 - `(user_id, paragraph_id)` is the primary key
@@ -157,6 +157,11 @@ GET /course/<course_id>/progress
 
 ```http
 DELETE /course/<course_id>/progress
+```
+```json
+{
+    "user_id": 1
+}
 ```
 - Admin only
 

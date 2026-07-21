@@ -7,9 +7,8 @@ paragraph = Blueprint("paragraph", __name__, url_prefix="/paragraph/<int:paragra
 
 @paragraph.url_value_preprocessor
 def verify_paragraph_id(endpoint: str, values: dict):
-    paragraph_id = values.pop("paragraph_id")
-    g.context = db.content.get_paragraph_context(paragraph_id)
-    if not g.context:
+    g.paragraph_id = values.pop("paragraph_id")
+    if g.paragraph_id not in db.paragraphs.context_cache:
         abort(404)
 
 
@@ -17,5 +16,5 @@ def verify_paragraph_id(endpoint: str, values: dict):
 @verify_user()
 @verify_empty
 def post_completion():
-    db.activity.update_completion(g.user_id, **g.context)
+    db.paragraphs.update_completion(g.user_id, g.paragraph_id)
     return jsonify(success=True), 200

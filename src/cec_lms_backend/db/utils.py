@@ -1,8 +1,15 @@
 import json
+import math
 from pyodbc import Cursor
 from typing import TextIO
 
 from cec_lms_backend.db.connection import connect
+
+def fetch_dict(cursor: Cursor):
+    row = cursor.fetchone()
+    if row is None: return None
+    columns = (column[0] for column in cursor.description)
+    return dict(zip(columns, row))
 
 def load_content(fp: TextIO):
     data = json.load(fp)
@@ -63,23 +70,22 @@ def load_content(fp: TextIO):
         cursor.executemany(
             """
             INSERT INTO Quizzes (course_id, module_id, passing_score, question_count)
-            VALUES (?, ?, 90, ?)
+            VALUES (?, ?, ?, ?)
             """,
-            ((course_id, map[q["module_ordinal"]], q["question_count"]) for q in quizzes)
+            ((
+                course_id, 
+                map[q["module_ordinal"]], 
+                math.ceil(q["question_count"]*0.9), 
+                q["question_count"]
+            ) for q in quizzes)
         )
 
         # Insert Final
         cursor.execute(
             """
             INSERT INTO dbo.Quizzes (course_id, passing_score, question_count)
-            VALUES (?, 80, ?)
+            VALUES (?, ?, ?)
             """,
-            (course_id, final_length)
+            (course_id, math.ceil(final_length*0.8), final_length)
         )
         connection.commit()
-
-def fetch_dict(cursor: Cursor):
-    row = cursor.fetchone()
-    if row is None: return None
-    columns = (column[0] for column in cursor.description)
-    return dict(zip(columns, row))
