@@ -13,79 +13,88 @@ def fetch_dict(cursor: Cursor):
 
 def load_content(fp: TextIO):
     data = json.load(fp)
-    title = data["title"]
-    modules = []
-    paragraphs = []
-    quizzes = []
-    for m in data["modules"]:
-        ordinal = m["id"] - 1
-        modules.append({"name": m["title"], "ordinal": ordinal})
-        paragraphs.extend({"module_ordinal": ordinal, "ordinal": i} for i in range(len(m["paragraphs"])))
-        if "quiz" in m:
-            quizzes.append({
-                "module_ordinal": ordinal, 
-                "question_count": sum(len(s["questions"]) for s in m["quiz"]["sections"])
-            })
-    final_length = len(data["finalQuiz"])
-
     with connect() as connection:
         cursor = connection.cursor()
 
         # Insert Course
+        print("Inserting course")
         cursor.execute(
             """
-            INSERT INTO Courses (title)
+            INSERT INTO Courses (title_en, title_es)
             OUTPUT INSERTED.course_id 
-            VALUES (?)
-            """, title
+            VALUES (?, ?)
+            """, data["title"], data["titleEs"]
         )
         course_id = cursor.fetchval()
 
-        # Insert Modules
-        map: dict[int, int] = {}
-        for m in modules:
+        # Insert Modules, Paragraphs, and Quizzes
+        for i, m in enumerate(data["modules"]):
+            print(f"    Inserting module {i}:   0%", end="", flush=True)
             cursor.execute(
                 """
-                INSERT INTO dbo.Modules (course_id, title, ordinal)
+                INSERT INTO dbo.Modules (course_id, ordinal, title_en, title_es)
                 OUTPUT INSERTED.module_id
-                VALUES (?, ?, ?)
+                VALUES (?, ?, ?, ?)
                 """,
-                course_id, 
-                m["name"], 
-                m["ordinal"]
+                course_id, i, m["title"], m["titleEs"]
             )
-            map[m["ordinal"]] = cursor.fetchval()
+            module_id = cursor.fetchval()
+
+            p_count = len(m["paragraphs"]) + int("quiz" in m)
+            for j, p in enumerate(m["paragraphs"]):
+                print(f"\b\b\b\b{100*(j+1)/p_count:3.0f}%", end="", flush=True)
+                cursor.execute(
+                    """
+                    INSERT INTO dbo.Paragraphs (
+                        module_id,
+                        ordinal,
+                        tagline_en,
+                        tagline_es,
+                        body_en,
+                        body_es,
+                        extras_json
+                    )
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, module_id,  j, 
+                    p.pop("tagline"), p.pop("taglineEs"), 
+                    p.pop("text"), p.pop("textEs"), json.dumps(p)
+                )
+
+            if "quiz" in m:
+                print(f"\b\b\b\b100%", end="", flush=True)
+                length = sum(len(s["questions"]) for s in m["quiz"]["sections"])
+                cursor.execute(
+                    """
+                    INSERT INTO dbo.Quizzes (
+                        course_id, 
+                        module_id, 
+                        passing_score, 
+                        question_count
+                    )
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    course_id,
+                    module_id,
+                    math.ceil(length*0.9),
+                    length
+                )
+            print()
 
 
-        # Insert Paragraphs
-        cursor.executemany(
-            """
-            INSERT INTO dbo.Paragraphs (module_id, ordinal)
-            VALUES (?, ?)
-            """, 
-            ((map[p["module_ordinal"]], p["ordinal"]) for p in paragraphs)
-        )
-
-        # Insert Quizzes
-        cursor.executemany(
-            """
-            INSERT INTO Quizzes (course_id, module_id, passing_score, question_count)
-            VALUES (?, ?, ?, ?)
-            """,
-            ((
-                course_id, 
-                map[q["module_ordinal"]], 
-                math.ceil(q["question_count"]*0.9), 
-                q["question_count"]
-            ) for q in quizzes)
-        )
-
-        # Insert Final
+        # insert final
+        print("    Inserting final")
+        final_length = len(data["finalQuiz"])
         cursor.execute(
             """
-            INSERT INTO dbo.Quizzes (course_id, passing_score, question_count)
+            INSERT INTO dbo.Quizzes (
+                course_id, 
+                passing_score, 
+                question_count
+            )
             VALUES (?, ?, ?)
             """,
-            (course_id, math.ceil(final_length*0.8), final_length)
+            course_id, 
+            math.ceil(final_length*0.8), 
+            final_length
         )
         connection.commit()

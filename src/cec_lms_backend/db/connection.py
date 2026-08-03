@@ -1,5 +1,4 @@
 import struct
-from datetime import datetime as dt, timezone as tz
 import time
 
 from azure.identity import AzureCliCredential
@@ -7,6 +6,7 @@ import pyodbc
 
 from cec_lms_backend.config import CONNECTION_STRING
 
+SQL_COPT_SS_ACCESS_TOKEN = 1256
 credential = AzureCliCredential()
 token = bytes()
 token_expiration = 0
@@ -21,13 +21,11 @@ def get_token():
     return token
 
 def connect() -> pyodbc.Connection:
-    SQL_COPT_SS_ACCESS_TOKEN = 1256
-    connection = pyodbc.connect(
+    return pyodbc.connect(
         CONNECTION_STRING,
         timeout=30,
         attrs_before={SQL_COPT_SS_ACCESS_TOKEN: get_token()}
     )
-    return connection
 
 def ping() -> bool:
     try:

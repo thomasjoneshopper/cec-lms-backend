@@ -1,30 +1,26 @@
+"""Entry point for flask app. Defines app factory `create_app()` as well as error handling"""
+
 from flask import Flask, jsonify, current_app, request
 from pyodbc import Error as DBError
-from werkzeug.exceptions import NotFound, MethodNotAllowed
+from werkzeug.exceptions import HTTPException, InternalServerError
 
 from cec_lms_backend.endpoints import auth, course, paragraph, quiz
 from cec_lms_backend.db import paragraphs, quizzes
 
+def http_error(error: HTTPException):
+    match error.code:
+        case 404: msg = f"Endpoint '{request.path}' does not exist"
+        case 405: msg = f"Method '{request.method}' not allowed for endpoint '{request.base_url}'"
+        case _: msg = error.description
 
-def not_found(error: NotFound):
     return jsonify(
         error=f"{error.code} {error.name}",
-        message=f"URL '{request.base_url}' does not exist"
-    ), 404
-
-def method_not_allowed(error: MethodNotAllowed):
-    return jsonify(
-        error=f"{error.code} {error.name}",
-        message=f"Method '{request.method}' not allowed for URL '{request.base_url}'"
-    ), 405
+        message = msg
+    ), error.code
 
 def db_error(error: DBError):
-    current_app.logger.exception(error)
-    return jsonify(
-        error="500 Internal Server Error",
-        message="An unexpected error occured"
-    ), 500
-
+    current_app.logger.exception("Database Error")
+    return http_error(InternalServerError())
 
 def create_app() -> Flask:
 
@@ -32,11 +28,15 @@ def create_app() -> Flask:
 
     app.json.sort_keys = False
 
+    print("loading paragraph cache ...", end="", flush=True)
     paragraphs.load_cache()
-    quizzes.load_cache()
+    print(" done")
 
-    app.register_error_handler(404, not_found)
-    app.register_error_handler(405, method_not_allowed)
+    print("loading quiz cache ...", end="", flush=True)
+    quizzes.load_cache()
+    print(" done")
+
+    app.register_error_handler(HTTPException, http_error)
     app.register_error_handler(DBError, db_error)
 
     app.register_blueprint(auth)

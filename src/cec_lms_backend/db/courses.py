@@ -19,11 +19,13 @@ def paragraphs_complete(user_id: int, course_id: int) -> bool:
             """
             SELECT p.paragraph_id 
             FROM dbo.Paragraphs AS p
+            JOIN dbo.Modules AS m
+            ON p.module_id = m.module_id
             LEFT JOIN dbo.UserParagraphCompletion AS c
             ON p.paragraph_id = c.paragraph_id
             AND c.user_id = ?
-            WHERE c.course_id = ?
-            AND c.paragraph_id IS NULL
+            WHERE m.course_id = ?
+            AND c.completion_time IS NULL
             """, user_id, course_id
         )
         return (cursor.fetchone() is None)
@@ -40,6 +42,7 @@ def quizzes_passed(user_id: int, course_id: int) -> bool:
             AND a.user_id = ?
             AND a.correct_answers >= q.passing_score
             WHERE q.course_id = ?
+            AND q.module_id IS NOT NULL
             AND a.attempt_id IS NULL
             """, user_id, course_id
         )
@@ -87,6 +90,24 @@ def get_progress(user_id: int, course_id: int) -> dict:
             else: 
                 modules[mid] = [pid]
 
+        cursor.execute(
+            """
+            SELECT q.module_id, q.quiz_id, MAX(a.correct_answers) as max_score
+            FROM dbo.Quizzes AS q
+            LEFT JOIN dbo.UserQuizAttempts AS a
+            ON q.quiz_id = a.quiz_id
+            AND a.user_id = ?
+            WHERE q.course_id = ?
+            GROUP BY q.module_id, q.quiz_id
+            """, user_id, course_id
+        )
+
+        quizzes = [{
+            "quiz_id": qid,
+            "module_id": mid,
+            "correct_answers": score
+        } for mid, qid, score in cursor]
+
     return {
         "course_id": course_id,
         "modules": [
@@ -95,7 +116,8 @@ def get_progress(user_id: int, course_id: int) -> dict:
                 "completed_paragraphs": value
             }
             for key, value in modules.items()
-        ]
+        ],
+        "quizzes": quizzes
     }
 
 def delete_progress(user_id: int, course_id: int):

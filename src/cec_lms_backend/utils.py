@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import g, request, jsonify
+from flask import abort, jsonify, g, request
 import jwt
 from pydantic import BaseModel, ValidationError
 
@@ -16,35 +16,19 @@ def verify_user(roles=["reader","admin"]):
         @wraps(f)
         def wrapper(*args, **kwargs):
             cookie = request.cookies.get(config.SESSION_COOKIE)
-            error_message = None
 
-            if not cookie:
-                return jsonify(error="Authentication required"), 401
+            if not cookie: abort(401, "Authentication required")
             try:
-                if not cookie: raise ValueError
                 claims = jwt.decode(
                     jwt=cookie, key=config.JWT_SECRET, algorithms=[config.JWT_ALGO],
                     options={"require": ["sub", "exp", "iat"]}
                 )
-
-            except ValueError: error_message = "Authentication required"
-            except jwt.ExpiredSignatureError: error_message = "Token expired"
-            except jwt.InvalidTokenError: error_message = "Invalid token"
-            except jwt.PyJWTError as e: error_message = str(e)
-
-            if error_message:
-                return jsonify(
-                    error="401 Unauthorized", 
-                    message=error_message
-                ), 401
+            except jwt.InvalidTokenError: abort(401, "Invalid token")
+            except jwt.PyJWTError as e: abort(401, str(e))
 
             g.user_id = int(claims["sub"])
             g.user_role = db.users.get_role(g.user_id)
-            if g.user_role not in roles:
-                return jsonify(
-                    error="403 Forbidden",
-                    message="Insufficient permissions"
-                ), 403
+            if g.user_role not in roles: abort(403)
 
             return f(*args, **kwargs)
         return wrapper
@@ -71,8 +55,7 @@ def verify_json(schema: type[BaseModel]):
                     } for d in error.errors()]
                 ), 400
             
-            except Exception as e:
-                return jsonify(error=str(e)), 400
+            except Exception as e: abort(400, str(e))
             
             g.body = obj.model_dump()
             return f(*args, **kwargs)
@@ -88,10 +71,7 @@ def verify_empty(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if request.get_data():
-            return jsonify(
-                error="400 Bad Request",
-                message="Request body must be empty"
-            ), 400
+            abort(400, "Request body must be empty")
         return f(*args, **kwargs)
     
     return wrapper
