@@ -2,33 +2,17 @@ import json
 import time
 
 
-with open("../../cec-loto-lms/lessonData.json") as f:
+with open("../cec-loto-lms/lessonData.json") as f:
     data = json.load(f)
 
+questions = []
+for m in data["modules"]:
+    if "quiz" not in m: continue
+    questions.extend(set(q.keys()) for s in m["quiz"]["sections"] for q in s["questions"])
 
-paragraphs = [set(p.keys()) for m in data["modules"] for p in m["paragraphs"]]
-all_keys = set.union(*paragraphs)
-
-map = {}
-for key in all_keys:
-    bitmap = 0
-    bit = 1
-    for p in paragraphs:
-        if key in p:
-            bitmap |= bit
-        bit *= 2
-    map[bitmap] = map.get(bitmap, []) + [key]
-
-print(*(f"{k:039_x}: {v}" for k,v in map.items()), sep="\n")
-
-for bmp, l in map.items():
-    print(f"{l[0]}: ", end="")
-    for other in map:
-        if bmp & other == 0:
-            print(map[other][0], end=" ")
-    print()
-
-
+fields = set.intersection(*questions)
+for q in questions:
+    if q != fields: print(q)
 
 def loading():
     animation = "—\\|/"

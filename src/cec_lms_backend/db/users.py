@@ -39,11 +39,9 @@ def get_role(user_id: int) -> str | None:
     with connect() as connection:
         cursor = connection.execute(
             """
-            SELECT r.title
-            FROM dbo.Users AS u
-            JOIN dbo.Roles AS r
-            ON u.role_id = r.role_id
-            WHERE u.user_id = ?;
+            SELECT role_title
+            FROM dbo.Users
+            WHERE user_id = ?;
             """, user_id
         )
         return cursor.fetchval()
@@ -56,10 +54,8 @@ def get_entry(user_id: int) -> dict | None:
     with connect() as connection:
         cursor = connection.execute(
             """
-            SELECT u.employee_number, u.full_name, r.title AS role
-            FROM dbo.Users AS u
-            JOIN dbo.Roles AS r
-            ON u.role_id = r.role_id
+            SELECT employee_number, full_name, role_title
+            FROM dbo.Users
             WHERE u.user_id = ?;
             """, user_id
         )
