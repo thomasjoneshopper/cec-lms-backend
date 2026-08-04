@@ -1,14 +1,4 @@
-import json
-import time
-
-import requests
-
-
-with open("/home/thomas/cec-loto-lms/lessonData.json") as f:
-    data = json.load(f)
-
-# from src/assets/imageAssets.ts
-IMAGES = {
+{
     "logo":                "https://files.manuscdn.com/user_upload_by_module/session_file/106906643/lbrsyYFqvaQHtHPl.png",
     "safetyLogo":          "https://files.manuscdn.com/user_upload_by_module/session_file/106906643/tDKjByFYBkqelSeR.webp",
     "logosterling":        "https://files.manuscdn.com/user_upload_by_module/session_file/106906643/STAASdbgAPeSshGi.png",
@@ -28,45 +18,5 @@ IMAGES = {
     "authorizedEmployee":  "https://files.manuscdn.com/user_upload_by_module/session_file/106906643/bvlzDDQsNRAfriVQ.png",
     "affectedEmployee":    "https://files.manuscdn.com/user_upload_by_module/session_file/106906643/mqZhIbMhReNsQRTx.png",    
     "lotoWorkerLockout":   "https://files.manuscdn.com/user_upload_by_module/session_file/106906643/FzLAMMoPyqYmZvAD.png",
-    "lotoDangerTag":       "https://files.manuscdn.com/user_upload_by_module/session_file/106906643/uTlOTHQsSgyuKPAx.png",
+    "lotoDangerTag":       "https://files.manuscdn.com/user_upload_by_module/session_file/106906643/uTlOTHQsSgyuKPAx.png"
 }
-
-
-url_map = {}
-for name, url in IMAGES.items():
-    r = requests.get(url)
-    if r.status_code == 200:
-        filename=""
-        for c in name:
-            if c.isupper(): filename += f"-{c.lower()}"
-            else: filename += c
-        filename += f".{url.split(".")[-1]}"
-
-        with open(f"src/cec_lms_backend/img/{filename}", "wb") as f:
-            f.write(r.content)
-
-        url_map[url] = filename
-
-with open("url_map.json", "w") as f:
-    json.dump(url_map, f)
-
-
-
-def loading():
-    animation = "—\\|/"
-    rps = 2
-    times = [13, 9, 5, 9]
-    times = [x/(sum(times) * rps) for x in times]
-
-    i=0
-    print()
-    while True:
-        print("\x1b[2A", end="")
-        print(f"loading: ({animation[i]})")
-        time.sleep(times[i])
-        i = (i + 1) % len(animation)
-    
-    
-    
-
-

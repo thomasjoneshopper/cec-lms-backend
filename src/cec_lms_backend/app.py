@@ -4,7 +4,7 @@ from flask import Flask, jsonify, current_app, request
 from pyodbc import Error as DBError
 from werkzeug.exceptions import HTTPException, InternalServerError
 
-from cec_lms_backend.endpoints import auth, course, paragraph, quiz
+from cec_lms_backend.endpoints import auth, course, paragraph, quiz, image
 from cec_lms_backend.db import paragraphs, quizzes
 
 def http_error(error: HTTPException):
@@ -43,6 +43,7 @@ def create_app() -> Flask:
     app.register_blueprint(course)
     app.register_blueprint(paragraph)
     app.register_blueprint(quiz)
+    app.register_blueprint(image)
     
     return app
 

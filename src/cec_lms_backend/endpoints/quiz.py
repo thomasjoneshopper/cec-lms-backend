@@ -15,6 +15,7 @@ def verify_quiz_id(endpoint, values: dict):
 @verify_user()
 @verify_empty
 def get_attempt():
+    return None, 200
     attempt = db.quizzes.get_last_attempt(g.user_id, g.quiz_id)
     return jsonify(attempt), 200
 
@@ -24,6 +25,7 @@ class AttemptSchema(BaseModel):
 @verify_user()
 @verify_json(AttemptSchema)
 def post_attempt():
+    return None, 200
     if db.quizzes.is_final(g.quiz_id):
         course_id = db.quizzes.context_cache[g.quiz_id][0]
         msgs = []

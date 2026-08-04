@@ -6,3 +6,5 @@ __pycache__/
 .vs/
 
 *.egg-info/
+
+scripts/scratch.py

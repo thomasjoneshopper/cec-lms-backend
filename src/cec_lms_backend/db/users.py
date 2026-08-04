@@ -56,7 +56,7 @@ def get_entry(user_id: int) -> dict | None:
             """
             SELECT employee_number, full_name, role_title
             FROM dbo.Users
-            WHERE u.user_id = ?;
+            WHERE user_id = ?;
             """, user_id
         )
         
