@@ -4,33 +4,25 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 
 ## Database Tables
 
-### Roles:
-
-| Field | Type |
-| ----- | ---- |
-| `role_id` | `INT PK` |
-| `title` | `NVARCHAR` |
-
-- reader and admin
-
 ### Users:
 
 | Field | Type |
 | ----- | ---- |
 | `user_id` | `INT PK` |
-| `role_id` | `INT FK` |
+| `role_title` | `VARCHAR` |
 | `employee_number` | `NVARCHAR` |
 | `full_name` | `NVARCHAR` |
 | `creation_time` | `DATETIME2` |
+
 
 ### Courses:
 
 | Field | Type |
 | ----- | ---- |
 | `course_id` | `INT PK` |
-| `title` | `NVARCHAR` |
+| `title_en` | `NVARCHAR` |
+| `title_es` | `NVARCHAR` |
 
-- Add field for version information
 
 ### Modules:
 
@@ -38,8 +30,10 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 | ----- | ---- |
 | `module_id` | `INT PK` |
 | `course_id` | `INK FK` |
-| `title` | `NVARCHAR` |
 | `ordinal` | `INT` |
+| `title_en` | `NVARCHAR` |
+| `title_es` | `NVARCHAR` |
+
 
 ### Paragraphs:
 
@@ -48,6 +42,12 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 | `paragraph_id` | `INT PK` |
 | `module_id` | `INT FK` |
 | `ordinal` | `INT` |
+| `title_en` | `NVARCHAR` |
+| `title_es` | `NVARCHAR` |
+| `body_en` | `NVARCHAR` |
+| `body_es` | `NVARCHAR` |
+| `extras_json` | `NVARCHAR` |
+
 
 ### Quizzes:
 
@@ -57,7 +57,31 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 | `course_id` | `INT FK` |
 | `module_id` | `INT FK` |
 | `passing_score` | `INT` |
-| `question_count` | `INT` |
+
+
+### Questions:
+
+| Field | Type |
+| ----- | ---- |
+| `question_id` | `INT PK` |
+| `quiz_id` | `INT FK` |
+| `ordinal` | `INT` |
+| `body_en` | `NVARCHAR` |
+| `body_es` | `NVARCHAR` |
+| `hint_en` | `NVARCHAR` |
+| `hint_es` | `NVARCHAR` |
+
+
+### Answers:
+
+| Field | Type |
+| ----- | ---- |
+| `answer_id` | `INT PK` |
+| `question_id` | `INT FK` |
+| `body_en` | `NVARCHAR` |
+| `body_es` | `NVARCHAR` |
+| `correct` | `BIT` |
+
 
 ### UserCourseProgress:
 
@@ -70,7 +94,8 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 | `completion_time` | `DATETIME2` |
 | `creation_time` | `DATETIME2` |
 
-- `(user_id, course_id)` is the primary key
+- `(user_id,  course_id)` is the primary key
+
 
 ### UserParagraphCompletion:
 
@@ -82,7 +107,8 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 | `paragraph_id` | `INT FK` |
 | `completion_time` | `DATETIME2` |
 
-- `(user_id, paragraph_id)` is the primary key
+- `(user_id,  paragraph_id)` is the primary key
+
 
 ### UserQuizAttempts:
 
@@ -92,8 +118,21 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 | `user_id` | `INT FK` |
 | `course_id` | `INT FK` |
 | `quiz_id` | `INT FK` |
-| `correct_answers` | `INT` |
+| `pass` | `BIT` |
 | `submission_time` | `DATETIME2` |
+
+
+### UserAnswerSelections:
+
+| Field | Type |
+| ----- | ---- |
+| `attempt_id` | `INT FK` |
+| `quiz_id` | `INT FK` |
+| `question_id` | `INT FK` |
+| `answer_id` | `INT FK` |
+
+- `(attempt_id,  answer_id)` is the primary key
+
 
 ## API Endpoints
 
@@ -104,11 +143,13 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 │   ├── logout
 │   └── me
 ├── course/<course_id>/
-│   └── progress
+│   ├── progress
+│   └── cursor
 ├── paragraph/<paragraph_id>/
 │   └── completion
-└── quiz/<quiz_id>/
-    └── attempts
+├── quiz/<quiz_id>/
+│   └── attempts
+└── image/<filename>
 ```
 
 
@@ -119,7 +160,7 @@ POST /auth/login
 ```
 ```json
 {
-    "employee_number": "0TA16****",
+    "employee_number": "0TA16****", 
     "full_name": "John Doe"
 }
 ```
@@ -144,16 +185,14 @@ GET /auth/me
 <br>
 
 
-### Course Progress
+### Course
 
 ```http
 GET /course/<course_id>/progress
 ```
-
-- read `UserParagraphCompletion`, select all that correspond to current user and course
+- read `UserParagraphCompletion`,  select all that correspond to current user and course
 
 <br>
-
 
 ```http
 DELETE /course/<course_id>/progress
@@ -164,6 +203,13 @@ DELETE /course/<course_id>/progress
 }
 ```
 - Admin only
+
+<br>
+
+```http
+GET /course/<course_id>/cursor
+```
+- returns `active_module` and `active_paragraph`
 
 <br>
 
@@ -191,7 +237,22 @@ POST /quiz/<quiz_id>/attempts
 ```
 ```json
 {
-    "correct_answers": 10
+    "answers": [2, 5, 10, 13, 18, 22, 26, 30, 35, 37]
 }
 ```
-- need to switch to server side grading
+
+<br>
+
+### Image
+
+```http
+GET /image/<filename>
+```
+- exposes `src/cec_lms_backend/img`
+
+<br>
+
+## TO DO
+
+- add versioning system
+- extend to multiple courses

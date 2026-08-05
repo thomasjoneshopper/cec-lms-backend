@@ -57,8 +57,8 @@ BEGIN
         paragraph_id    INT             NOT NULL IDENTITY(1,1),
         module_id       INT             NOT NULL,
         ordinal         INT             NOT NULL,
-        tagline_en      NVARCHAR(128)   NOT NULL,
-        tagline_es      NVARCHAR(128)   NOT NULL, 
+        title_en        NVARCHAR(128)   NOT NULL,
+        title_es        NVARCHAR(128)   NOT NULL, 
         body_en         NVARCHAR(MAX)   NOT NULL,
         body_es         NVARCHAR(MAX)   NOT NULL,
         extras_json     NVARCHAR(MAX)   NOT NULL DEFAULT N'{}'
@@ -83,8 +83,7 @@ BEGIN
         quiz_id         INT NOT NULL IDENTITY(1,1),
         course_id       INT NOT NULL,
         module_id       INT NULL,       -- NULL for final quizzes
-        passing_score   INT NOT NULL,   -- Number of questions 
-        question_count  INT NOT NULL,
+        passing_score   INT NOT NULL,   -- percent; 0-100 
 
         CONSTRAINT PK_Quizzes
             PRIMARY KEY (quiz_id),
@@ -99,9 +98,7 @@ BEGIN
         CONSTRAINT UQ_Quizzes_Modules
             UNIQUE (course_id, module_id),
         CONSTRAINT CK_Quizzes_passing_score
-            CHECK (passing_score BETWEEN 0 AND 100),
-        CONSTRAINT CK_Quizzes_question_count
-            CHECK (question_count > 0)
+            CHECK (passing_score BETWEEN 0 AND 100)
     );
 END;
 
@@ -118,6 +115,8 @@ BEGIN
 
         CONSTRAINT PK_Questions
             PRIMARY KEY (question_id),
+        CONSTRAINT AK_Questions_Quizzes
+            UNIQUE (quiz_id, question_id),
         CONSTRAINT FK_Questions_Quizzes
             FOREIGN KEY (quiz_id)
             REFERENCES dbo.Quizzes (quiz_id),
@@ -137,6 +136,8 @@ BEGIN
 
         CONSTRAINT PK_Answers
             PRIMARY KEY (answer_id),
+        CONSTRAINT AK_Answers_Questions
+            UNIQUE (question_id, answer_id),
         CONSTRAINT FK_Answers_Questions
             FOREIGN KEY (question_id)
             REFERENCES dbo.Questions (question_id)
@@ -208,6 +209,8 @@ BEGIN
 
         CONSTRAINT PK_Attempts 
             PRIMARY KEY (attempt_id),
+        CONSTRAINT AK_Attempts_Quizzes
+            UNIQUE (quiz_id, attempt_id),
         CONSTRAINT FK_Attempts_Progress 
             FOREIGN KEY (user_id, course_id)
             REFERENCES dbo.UserCourseProgress (user_id, course_id) 
@@ -220,3 +223,27 @@ BEGIN
     );
 END;
 
+IF OBJECT_ID('dbo.UserAnswerSelections', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.UserAnswerSelections (
+        attempt_id  INT NOT NULL,
+        quiz_id     INT NOT NULL,
+        question_id INT NOT NULL,
+        answer_id   INT NOT NULL,
+
+        CONSTRAINT PK_Selections
+            PRIMARY KEY (attempt_id, answer_id),
+        CONSTRAINT FK_Selections_Attempts
+            FOREIGN KEY (quiz_id, attempt_id)
+            REFERENCES dbo.UserQuizAttempts (quiz_id, attempt_id)
+            ON DELETE CASCADE,
+        CONSTRAINT FK_Selections_Questions
+            FOREIGN KEY (quiz_id, question_id)
+            REFERENCES dbo.Questions (quiz_id, question_id),
+        CONSTRAINT FK_Selections_Answers
+            FOREIGN KEY (question_id, answer_id)
+            REFERENCES dbo.Answers (question_id, answer_id),
+        CONSTRAINT UQ_Selections_Questions
+            UNIQUE (attempt_id, question_id)
+    );
+END;

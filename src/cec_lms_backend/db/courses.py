@@ -30,7 +30,7 @@ def paragraphs_complete(user_id: int, course_id: int) -> bool:
         )
         return (cursor.fetchone() is None)
     
-def quizzes_passed(user_id: int, course_id: int) -> bool:
+def module_quizzes_passed(user_id: int, course_id: int) -> bool:
     with connect() as connection:
         # get ids of all quizzes that have not been passed
         cursor = connection.execute(
@@ -40,14 +40,13 @@ def quizzes_passed(user_id: int, course_id: int) -> bool:
             LEFT JOIN dbo.UserQuizAttempts AS a
             ON q.quiz_id = a.quiz_id
             AND a.user_id = ?
-            AND a.correct_answers >= q.passing_score
+            AND a.pass
             WHERE q.course_id = ?
             AND q.module_id IS NOT NULL
             AND a.attempt_id IS NULL
             """, user_id, course_id
         )
         return (cursor.fetchone() is None)
-
 
 def ensure_course_progress(connection: Connection, user_id: int, course_id: int):
     cursor = connection.cursor()
@@ -71,9 +70,17 @@ def ensure_course_progress(connection: Connection, user_id: int, course_id: int)
 
     connection.commit()
 
-def get_progress(user_id: int, course_id: int) -> dict:
+def get_progress(user_id: int, course_id: int) -> dict | None:
     with connect() as connection:
         cursor = connection.cursor()
+        cursor.execute(
+            """
+            SELECT 1 FROM dbo.UserCourseProgress
+            WHERE user_id = ? and course_id = ?
+            """, user_id, course_id
+        )
+        if not cursor.fetchval(): return None
+
         cursor.execute(
             """
             SELECT module_id, paragraph_id
@@ -85,28 +92,25 @@ def get_progress(user_id: int, course_id: int) -> dict:
 
         modules = {}
         for mid, pid in cursor:
-            if modules.get(mid):
-                modules[mid].append(pid)
-            else: 
-                modules[mid] = [pid]
+            modules[mid] = modules.get(mid, []) + [pid]
 
         cursor.execute(
             """
-            SELECT q.module_id, q.quiz_id, MAX(a.correct_answers) as max_score
+            SELECT  q.quiz_id, q.module_id, MAX(CAST(a.pass AS INT)) AS pass
             FROM dbo.Quizzes AS q
-            LEFT JOIN dbo.UserQuizAttempts AS a
+            JOIN dbo.UserQuizAttempts AS a
             ON q.quiz_id = a.quiz_id
             AND a.user_id = ?
             WHERE q.course_id = ?
-            GROUP BY q.module_id, q.quiz_id
+            GROUP BY q.quiz_id, q.module_id
             """, user_id, course_id
         )
 
         quizzes = [{
             "quiz_id": qid,
             "module_id": mid,
-            "correct_answers": score
-        } for mid, qid, score in cursor]
+            "pass": pass_
+        } for qid, mid, pass_ in cursor]
 
     return {
         "course_id": course_id,

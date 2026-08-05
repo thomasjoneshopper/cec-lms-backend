@@ -4,7 +4,6 @@ from cec_lms_backend.db.utils import fetch_dict
 def get_id(employee_number: str, full_name: str) -> int:
     """
     Returns `user_id`, updating `Users` if entry does not exist.
-
     `employee_number` is used for matching; `full_name` only needed if insert
     """
 

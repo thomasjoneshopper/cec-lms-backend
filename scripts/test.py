@@ -42,28 +42,21 @@ def print_response(r: requests.Response):
     print()
 
 
-
 def test_api():
     with AuthenticatedSession() as s:
 
         # for i in range(1,123):
         #     r = s.post(f"{DOMAIN}/paragraph/{i}/completion")
         #     print(f"{i:>3}: {r.status_code} {r.reason}")
-
-        # for i in range(1,5):
-        #     r = s.post(f"{DOMAIN}/quiz/{i}/attempts", json={"correct_answers": 10})
-        #     print(f"{i:>3}: {r.status_code} {r.reason}")
-
-        # r = s.post(f"{DOMAIN}/quiz/{5}/attempts", json={"correct_answers": 27})
-        # print(f"{5:>3}: {r.status_code} {r.reason}")
         
+        # r = s.get(f"{DOMAIN}/course/1/progress")
+        # print_response(r)
+
+        # r = s.delete(f"{DOMAIN}/course/1/progress", json={"user_id": 1})
+        # print_response(r)
+
         r = s.get(f"{DOMAIN}/course/1/progress")
         print_response(r)
-
-
-def test_load_content():
-    with open("/home/thomas/cec-loto-lms/lessonData.json") as f: 
-        db.utils.load_content(f)
 
 def test_pooling(n: int = 100):
     spids = {}
@@ -79,8 +72,4 @@ def test_pooling(n: int = 100):
 
 
 if __name__ == "__main__":
-    test_load_content()
-
-    # with AuthenticatedSession() as s:
-    #     r = s.put(f"{DOMAIN}/quiz/5/attempts", json={"correct_answers":5})
-    #     print_response(r)
+    test_api()

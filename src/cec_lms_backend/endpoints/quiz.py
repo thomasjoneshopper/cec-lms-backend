@@ -15,17 +15,18 @@ def verify_quiz_id(endpoint, values: dict):
 @verify_user()
 @verify_empty
 def get_attempt():
-    return None, 200
     attempt = db.quizzes.get_last_attempt(g.user_id, g.quiz_id)
     return jsonify(attempt), 200
 
 class AttemptSchema(BaseModel):
-    correct_answers: int
+    answers: list[int]
 @quiz.post("/attempts")
 @verify_user()
 @verify_json(AttemptSchema)
 def post_attempt():
-    return None, 200
+    pass_ = db.quizzes.is_pass(g.quiz_id, **g.body)
+    if pass_ is None: abort(400)
+
     if db.quizzes.is_final(g.quiz_id):
         course_id = db.quizzes.context_cache[g.quiz_id][0]
         msgs = []
@@ -37,5 +38,8 @@ def post_attempt():
             abort(403, " ".join(msgs))
         
         
-    attempt_id = db.quizzes.update_attempts(g.user_id, g.quiz_id, **g.body)
-    return jsonify(attempt_id=attempt_id), 200
+    attempt_id = db.quizzes.create_attempt(g.user_id, g.quiz_id, pass_, **g.body)
+    return {
+        "attempt_id": attempt_id, 
+        "pass": pass_
+    }, 200
