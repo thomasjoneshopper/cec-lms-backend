@@ -144,7 +144,8 @@ Backend API built in Python with the Flask framework. Database is a Microsoft SQ
 │   └── me
 ├── course/<course_id>/
 │   ├── progress
-│   └── cursor
+│   ├── cursor
+│   └── content
 ├── paragraph/<paragraph_id>/
 │   └── completion
 ├── quiz/<quiz_id>/
@@ -164,6 +165,7 @@ POST /auth/login
     "full_name": "John Doe"
 }
 ```
+
 - determine `user_id`
 - generate `Users` entry if does not exist
 - set jwt cookie with `sub = user_id`
@@ -213,6 +215,13 @@ GET /course/<course_id>/cursor
 
 <br>
 
+```http
+GET /course/<course_id>/content
+```
+- returns all course content
+
+<br>
+
 ### Paragraph Completion
 
 ```http
@@ -254,5 +263,7 @@ GET /image/<filename>
 
 ## TO DO
 
+- TEST ENDPOINTS
+- UPDATE FRONTEND
 - add versioning system
 - extend to multiple courses

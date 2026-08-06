@@ -9,7 +9,7 @@ quiz = Blueprint("quiz", __name__, url_prefix="/quiz/<int:quiz_id>")
 @quiz.url_value_preprocessor
 def verify_quiz_id(endpoint, values: dict):
     g.quiz_id = values.pop("quiz_id", None)
-    if g.quiz_id not in db.quizzes.context_cache: abort(404)
+    if g.quiz_id not in db.quizzes.quiz_cache: abort(404)
 
 @quiz.get("/attempts")
 @verify_user()

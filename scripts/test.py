@@ -1,3 +1,4 @@
+import json
 import time
 
 import requests
@@ -72,4 +73,5 @@ def test_pooling(n: int = 100):
 
 
 if __name__ == "__main__":
-    test_api()
+    r = requests.get("http://127.0.0.1:5000/course/1/content")
+    with open("temp.json", "wb") as f: f.write(r.content)

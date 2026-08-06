@@ -1,4 +1,6 @@
 import asyncio
+import json
+
 from cec_lms_backend.db.courses import ensure_course_progress
 from cec_lms_backend.db.connection import connect
 
@@ -17,7 +19,5 @@ async def loading():
         i = (i + 1) % len(animation)
     
 
-    
-with connect() as connection:
-    ensure_course_progress(connection, 1, 1)
+
 

@@ -36,3 +36,9 @@ def delete_progress():
 def get_cursor():
     cursor = db.courses.get_cursor(g.user_id, g.course_id)
     return jsonify(cursor), 200
+
+@course.get("/content")
+@verify_empty
+def get_content():
+    content = db.courses.get_content(g.course_id)
+    return jsonify(content), 200

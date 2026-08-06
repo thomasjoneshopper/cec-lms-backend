@@ -204,7 +204,7 @@ BEGIN
         user_id             INT         NOT NULL,
         course_id           INT         NOT NULL,
         quiz_id             INT         NOT NULL,
-        correct_answers     INT         NOT NULL,
+        pass                BIT         NOT NULL,
         submission_time     DATETIME2   NOT NULL DEFAULT SYSUTCDATETIME(),
 
         CONSTRAINT PK_Attempts 
@@ -218,8 +218,6 @@ BEGIN
         CONSTRAINT FK_Attempts_Quizzes 
             FOREIGN KEY (course_id, quiz_id)
             REFERENCES dbo.Quizzes (course_id, quiz_id),
-        CONSTRAINT CK_Attempts_correct_answers
-            CHECK (correct_answers >= 0)
     );
 END;
 

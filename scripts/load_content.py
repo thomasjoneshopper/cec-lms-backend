@@ -42,7 +42,7 @@ def insert_paragraph(cursor, paragraph, module_id, ordinal):
         """, module_id, ordinal, 
         paragraph.pop("tagline"), paragraph.pop("taglineEs"), 
         paragraph.pop("text"), paragraph.pop("textEs"),
-        json.dumps(p)
+        json.dumps(paragraph)
     )
 
 def insert_quiz(cursor, quiz):
