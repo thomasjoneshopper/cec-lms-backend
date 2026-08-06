@@ -45,15 +45,15 @@ def print_response(r: requests.Response):
 def test_api():
     with AuthenticatedSession() as s:
 
-        # for i in range(1,123):
-        #     r = s.post(f"{DOMAIN}/paragraph/{i}/completion")
-        #     print(f"{i:>3}: {r.status_code} {r.reason}")
+        for i in range(1,123):
+            r = s.post(f"{DOMAIN}/paragraph/{i}/completion")
+            print(f"{i:>3}: {r.status_code} {r.reason}")
         
-        # r = s.get(f"{DOMAIN}/course/1/progress")
-        # print_response(r)
+        r = s.get(f"{DOMAIN}/course/1/progress")
+        print_response(r)
 
-        # r = s.delete(f"{DOMAIN}/course/1/progress", json={"user_id": 1})
-        # print_response(r)
+        r = s.delete(f"{DOMAIN}/course/1/progress", json={"user_id": 1})
+        print_response(r)
 
         r = s.get(f"{DOMAIN}/course/1/progress")
         print_response(r)

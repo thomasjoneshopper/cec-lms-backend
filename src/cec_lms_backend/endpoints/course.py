@@ -29,3 +29,10 @@ class DeleteProgressSchema(BaseModel):
 def delete_progress():
     db.courses.delete_progress(g.body["user_id"], g.course_id)
     return jsonify(success=True), 200
+
+@course.get("/cursor")
+@verify_user
+@verify_empty
+def get_cursor():
+    cursor = db.courses.get_cursor(g.user_id, g.course_id)
+    return jsonify(cursor), 200

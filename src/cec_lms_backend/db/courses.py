@@ -1,6 +1,7 @@
 from pyodbc import Connection
 
 from cec_lms_backend.db.connection import connect
+from cec_lms_backend.db.utils import fetch_dict
 
 def course_exists(course_id: int) -> bool:
     with connect() as connection:
@@ -135,3 +136,14 @@ def delete_progress(user_id: int, course_id: int):
         )
 
         connection.commit()
+
+def get_cursor(user_id: int, course_id: int) -> dict | None:
+    with connect() as connection:
+        cursor = connection.execute(
+            """
+            SELECT active_module, active_paragraph
+            FROM dbo.UserCourseProgress
+            WHERE user_id = ? AND course_id = ?
+            """, user_id, course_id
+        )
+        return fetch_dict(cursor)
