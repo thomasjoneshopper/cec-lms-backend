@@ -25,7 +25,7 @@ class AttemptSchema(BaseModel):
 @verify_json(AttemptSchema)
 def post_attempt():
     pass_ = db.quizzes.is_pass(g.quiz_id, **g.body)
-    if pass_ is None: abort(400)
+    if pass_ is None: abort(400, "Invalid answer selection")
 
     if db.quizzes.is_final(g.quiz_id):
         course_id = db.quizzes.context_cache[g.quiz_id][0]

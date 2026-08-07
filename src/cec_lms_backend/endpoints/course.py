@@ -34,6 +34,7 @@ def delete_progress():
 @verify_user
 @verify_empty
 def get_cursor():
+    return {}, 501
     cursor = db.courses.get_cursor(g.user_id, g.course_id)
     return jsonify(cursor), 200
 

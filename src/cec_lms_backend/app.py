@@ -25,7 +25,6 @@ def db_error(error: DBError):
 def create_app() -> Flask:
 
     app = Flask(__name__)
-
     app.json.sort_keys = False
 
     print("loading paragraph cache ...", end="", flush=True)

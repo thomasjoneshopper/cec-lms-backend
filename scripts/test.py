@@ -73,5 +73,6 @@ def test_pooling(n: int = 100):
 
 
 if __name__ == "__main__":
-    r = requests.get("http://127.0.0.1:5000/course/1/content")
-    with open("temp.json", "wb") as f: f.write(r.content)
+    with AuthenticatedSession() as s:
+        r = s.post(f"{DOMAIN}/quiz/1/attempts", json={"answers": [2, 5, 10, 13, 18, 22, 26, 30, 35, 37]})
+        print_response(r)

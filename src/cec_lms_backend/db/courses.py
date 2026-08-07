@@ -101,21 +101,20 @@ def get_progress(user_id: int, course_id: int) -> dict | None:
 
         cursor.execute(
             """
-            SELECT  q.quiz_id, q.module_id, MAX(CAST(a.pass AS INT)) AS pass
+            SELECT  q.quiz_id, MAX(CAST(a.pass AS INT)) AS pass
             FROM dbo.Quizzes AS q
             JOIN dbo.UserQuizAttempts AS a
             ON q.quiz_id = a.quiz_id
             AND a.user_id = ?
             WHERE q.course_id = ?
-            GROUP BY q.quiz_id, q.module_id
+            GROUP BY q.quiz_id
             """, user_id, course_id
         )
 
         quizzes = [{
             "quiz_id": qid,
-            "module_id": mid,
             "pass": bool(pass_)
-        } for qid, mid, pass_ in cursor]
+        } for qid, pass_ in cursor]
 
     return {
         "course_id": course_id,

@@ -40,7 +40,7 @@ def load_cache():
                 "course_id": cid,
                 "module_id": mid,
                 "passing_score": score,
-                "question_count": 0
+                "questions": set()
             }
 
             for qid, cid, mid, score in cursor
@@ -56,9 +56,8 @@ def load_cache():
         )
 
         for quiz_id, question_id, answer_id, correct in cursor:
-            quiz_cache[quiz_id]["question_count"] += 1
+            quiz_cache[quiz_id]["questions"].add(question_id)
             answer_cache[answer_id] = {
-                "quiz_id": quiz_id,
                 "question_id": question_id,
                 "correct": correct
             }
@@ -89,14 +88,12 @@ def is_pass(quiz_id: int, answers: list[int]) -> bool | None:
     questions_answered = set()
     correct = 0
     for a in answers:
-        if answer_cache[a]["quiz_id"] != quiz_id: 
-            return None
-        questions_answered.add(a)
+        questions_answered.add(answer_cache[a]["question_id"])
         correct += answer_cache[a]["correct"]
 
-    if len(questions_answered) != quiz_cache[quiz_id]["question_count"]:
+    if questions_answered != quiz_cache[quiz_id]["questions"]:
         return None
-    score = 100*correct // quiz_cache[quiz_id]["question_count"]
+    score = 100*correct // len(quiz_cache[quiz_id]["questions"])
     return (score >= quiz_cache[quiz_id]["passing_score"])
 
 
